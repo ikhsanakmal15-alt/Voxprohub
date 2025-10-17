@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js"; // ✅ tambahkan ini
+import landingRoutes from "./routes/landingRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -11,9 +12,10 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ Tambahkan route booking
+// ✅ Route API
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes); // ✅ route baru
+app.use("/api/landing", landingRoutes);
 
 app.get("/", (req, res) => res.send("Backend VoxproHub aktif ✅"));
 
