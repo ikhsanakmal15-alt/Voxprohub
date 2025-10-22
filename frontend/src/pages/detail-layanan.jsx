@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-
-import podcastRoom from "../assets/podcast-room.png";
-import creativeStudio from "../assets/creative-studio.png";
-import smallRoom from "../assets/small-room.png";
-import meetingRoom from "../assets/meeting-room.png";
-import loungeArea from "../assets/lounge-area.png";
-import image14 from "../assets/image14.png";
+import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import image14 from "../assets/image14.png"; // logo
 
 export default function DetailLayanan() {
   const [scroll, setScroll] = useState(false);
   const [open, setOpen] = useState(false);
+  const [layanan, setLayanan] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [heroImage, setHeroImage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,58 +18,36 @@ export default function DetailLayanan() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const layanan = [
-    {
-      id: 1,
-      title: "Podcast Room",
-      desc: "Ruang kedap suara eksklusif dengan mikrofon profesional dan pencahayaan lembut. Didesain untuk konten kreator, musisi, dan siapa pun yang ingin menghadirkan suara berkualitas tinggi dalam suasana nyaman.",
-      image: podcastRoom,
-    },
-    {
-      id: 2,
-      title: "Creative Studio",
-      desc: "Studio kreatif dengan pencahayaan adjustable, backdrop premium, serta area kerja fleksibel. Ideal untuk ide besar, photoshoot, atau video produksi profesional.",
-      image: creativeStudio,
-    },
-    {
-      id: 3,
-      title: "Lounge Area",
-      desc: "Tempat istirahat bergaya modern dengan aroma kopi hangat dan desain estetis. Diciptakan untuk kolaborasi santai, diskusi ringan, dan inspirasi tanpa tekanan.",
-      image: loungeArea,
-    },
-    {
-      id: 4,
-      title: "Small Room",
-      desc: "Ruang privat kecil namun fungsional, memberikan ketenangan bagi mereka yang fokus bekerja. Dilengkapi pencahayaan hangat dan kenyamanan optimal.",
-      image: smallRoom,
-    },
-    {
-      id: 5,
-      title: "Meeting Room",
-      desc: "Ruang rapat modern dengan tata ruang elegan dan konektivitas lancar. Tempat terbaik untuk merancang strategi dan mengambil keputusan besar.",
-      image: meetingRoom,
-    },
-  ];
+  useEffect(() => {
+    // Ambil data layanan
+    axios
+      .get("http://localhost:5000/api/layanan")
+      .then((res) => setLayanan(res.data))
+      .catch((err) => console.error("Gagal mengambil data layanan:", err));
+
+    // Ambil hero image dari backend
+    axios
+      .get("http://localhost:5000/api/settings/hero-image")
+      .then((res) => setHeroImage(res.data.image))
+      .catch(() => setHeroImage(null));
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#f8f7f6] text-gray-800 font-[Poppins] overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-[#f9f7f4] to-[#f2efec] text-gray-800 font-[Poppins] overflow-x-hidden">
+
       {/* === NAVBAR === */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scroll
-            ? "bg-white/80 shadow-lg backdrop-blur-md py-2"
-            : "bg-transparent py-4"
+          scroll ? "bg-white/80 shadow-lg backdrop-blur-md py-2" : "bg-transparent py-4"
         }`}
       >
         <div className="max-w-6xl mx-auto px-5 flex justify-between items-center">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src={image14} alt="Logo" className="w-8 h-8" />
-            <h1 className="font-semibold text-lg text-[#d26b33] tracking-wide">
-              VOXPRO HUB
-            </h1>
+            <h1 className="font-semibold text-lg text-[#d26b33] tracking-wide">VOXPRO HUB</h1>
           </div>
 
-          {/* === MENU DESKTOP === */}
+          {/* Menu Desktop */}
           <div className="hidden md:flex gap-8 text-gray-700 font-medium">
             {[
               { name: "Beranda", path: "/" },
@@ -91,14 +67,9 @@ export default function DetailLayanan() {
             ))}
           </div>
 
-          {/* === MENU MOBILE BUTTON === */}
+          {/* Menu Mobile */}
           <button className="md:hidden" onClick={() => setOpen(!open)}>
-            <svg
-              className="w-6 h-6 text-[#d26b33]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6 text-[#d26b33]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -109,7 +80,7 @@ export default function DetailLayanan() {
           </button>
         </div>
 
-        {/* === MENU MOBILE === */}
+        {/* Mobile Menu */}
         <div
           className={`md:hidden bg-white/90 backdrop-blur-md overflow-hidden transition-all duration-500 ${
             open ? "max-h-64 py-4" : "max-h-0"
@@ -117,12 +88,7 @@ export default function DetailLayanan() {
         >
           <div className="flex flex-col items-center gap-3 text-gray-700 font-medium text-sm">
             {["Beranda", "Booking", "Kontak", "Fasilitas"].map((item) => (
-              <Link
-                key={item}
-                to={`/${item.toLowerCase()}`}
-                onClick={() => setOpen(false)}
-                className="hover:text-[#d26b33] transition"
-              >
+              <Link key={item} to={`/${item.toLowerCase()}`} onClick={() => setOpen(false)} className="hover:text-[#d26b33] transition">
                 {item}
               </Link>
             ))}
@@ -130,88 +96,121 @@ export default function DetailLayanan() {
         </div>
       </nav>
 
-      {/* === HERO === */}
-      <section className="relative h-[480px] md:h-[520px] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent z-10" />
-        <img
-          src={podcastRoom}
-          alt="Hero Background"
-          className="object-cover w-full h-full brightness-90"
-        />
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-20">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-3xl md:text-5xl font-semibold tracking-wide drop-shadow-lg"
-          >
-            Inspirasi, Kreativitas, dan Kolaborasi
-          </motion.h1>
-          <p className="mt-4 text-sm md:text-lg max-w-2xl text-gray-200">
-            Temukan ruang yang dirancang untuk mendukung setiap ide besar dan proses kreatifmu.
-          </p>
+      {/* === HERO IMAGE === */}
+      {heroImage && (
+        <div className="relative w-full h-[480px] md:h-[520px] overflow-hidden mt-16">
+          <img
+            src={`http://localhost:5000/uploads/${heroImage}`}
+            alt="Hero"
+            className="w-full h-full object-cover brightness-90"
+          />
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <motion.h1
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8 }}
+              className="text-3xl md:text-5xl font-semibold text-white text-center px-4"
+            >
+              Inspirasi, Kreativitas, dan Kolaborasi
+            </motion.h1>
+          </div>
         </div>
-      </section>
+      )}
 
-      {/* === SHOWCASE === */}
+      {/* === LAYANAN === */}
       <section className="py-20 px-4 md:px-8 max-w-6xl mx-auto">
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-3xl md:text-4xl font-bold text-center mb-3 text-[#b85c2c]"
+        >
+          Layanan Kami
+        </motion.h1>
+
         <motion.p
           initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 1 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
           className="text-center text-gray-600 italic mb-12 text-sm"
         >
           Ruang penuh inspirasi dan fungsi — pilih yang sesuai kebutuhanmu ↓
         </motion.p>
 
-        <div className="flex flex-wrap justify-center gap-4 md:gap-5">
+        <div className="flex flex-wrap justify-center gap-6">
           {layanan.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{
-                scale: 1.02,
-                boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-              }}
-              className="w-[260px] md:w-[280px] bg-white rounded-2xl shadow-sm overflow-hidden transition-all duration-500 hover:bg-[#f8f5f2]"
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ scale: 1.03 }}
+              onClick={() => setSelected(item)}
+              className="cursor-pointer w-[270px] md:w-[290px] bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-500"
             >
-              <div className="p-5 flex flex-col justify-between h-[520px]">
+              <img
+                src={`http://localhost:5000/uploads/${item.image}`}
+                alt={item.title}
+                className="w-full h-[220px] object-cover hover:scale-105 transition-transform duration-700"
+              />
+              <div className="p-5 flex flex-col justify-between h-[250px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-[#b85c2c] mb-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                    {item.desc}
-                  </p>
+                  <h3 className="text-lg font-semibold text-[#b85c2c] mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-700 line-clamp-4">{item.desc}</p>
                 </div>
-                <div className="overflow-hidden rounded-xl">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-[280px] object-cover transition-transform duration-700 hover:scale-110"
-                  />
-                </div>
+                <button className="mt-3 text-sm text-[#b85c2c] font-medium hover:underline">
+                  Lihat Detail →
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
-      </section>
 
+        {/* === MODAL DETAIL === */}
+        <AnimatePresence>
+          {selected && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+              onClick={() => setSelected(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-2xl p-6 max-w-lg w-[90%] relative shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setSelected(null)}
+                  className="absolute top-3 right-4 text-gray-500 hover:text-black text-xl"
+                >
+                  ✕
+                </button>
+                <img
+                  src={`http://localhost:5000/uploads/${selected.image}`}
+                  alt={selected.title}
+                  className="w-full h-[250px] object-cover rounded-xl mb-4"
+                />
+                <h2 className="text-2xl font-semibold text-[#b85c2c] mb-3">{selected.title}</h2>
+                <p className="text-gray-700 text-sm leading-relaxed">{selected.desc}</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
 
       {/* === FOOTER === */}
       <footer className="bg-[#fbfbfb] text-gray-700 text-center py-10 mt-16 rounded-t-3xl shadow-inner">
-        <h2 className="text-lg font-semibold mb-2 tracking-wide text-[#b85c2c]">
-          VOXPRO HUB
-        </h2>
+        <h2 className="text-lg font-semibold mb-2 tracking-wide text-[#b85c2c]">VOXPRO HUB</h2>
         <p className="text-sm max-w-md mx-auto mb-3">
           Ruang untuk berkreasi, berinovasi, dan berkolaborasi — karena setiap ide layak untuk diwujudkan.
         </p>
-        <p className="text-xs text-gray-500">
-          © {new Date().getFullYear()} VoxPro Hub. All rights reserved.
-        </p>
-      </footer>  
-      </div>
+        <p className="text-xs text-gray-500">© {new Date().getFullYear()} VoxPro Hub. All rights reserved.</p>
+      </footer>
+    </div>
   );
 }

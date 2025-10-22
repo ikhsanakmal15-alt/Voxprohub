@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // 🔹 Import semua halaman
 import LandingPage from "./landingPage";
 import Fasilitas from "./pages/Fasilitas";
+import Lokasi from "./pages/Lokasi";
 import Booking from "./pages/Booking";
 import Kontak from "./pages/Kontak";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         {/* 🌐 Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/fasilitas" element={<Fasilitas />} />
+        <Route path="/lokasi" element={<Lokasi/>} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/kontak" element={<Kontak />} />
         <Route path="/login" element={<Login />} />
