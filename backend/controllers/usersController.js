@@ -36,3 +36,4 @@ export const deleteUser = (req, res) => {
     res.status(200).json({ message: "User berhasil dihapus" });
   });
 };
+//

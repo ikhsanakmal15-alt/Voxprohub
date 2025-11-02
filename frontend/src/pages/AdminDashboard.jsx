@@ -15,22 +15,28 @@ import {
   FaSave,
   FaEye,
   FaImage,
+  FaTachometerAlt,
+  FaCalendarCheck,
+  FaUserFriends,
+  FaBoxes,
+  FaLayerGroup,
+  FaPalette,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  // === API ENDPOINTS (tetap seperti aslinya + layanan) ===
-  const API_URL_BOOKING = "http://localhost:5000/api/bookings";
-  const API_URL_LANDING = "http://localhost:5000/api/landing";
-  const API_URL_THEME = "http://localhost:5000/api/theme";
-  const API_URL_USERS = "http://localhost:5000/api/users";
-  const API_URL_LAYANAN = "http://localhost:5000/api/layanan";
-  // endpoint untuk upload file (sesuaikan backend)
-  const API_URL_LAYANAN_UPLOAD = "http://localhost:5000/api/layanan/upload";
+  // === API ENDPOINTS ===
+  const API_BASE = "http://localhost:5000";
+  const API_URL_BOOKING = `${API_BASE}/api/bookings`;
+  const API_URL_LANDING = `${API_BASE}/api/landing`;
+  const API_URL_THEME = `${API_BASE}/api/theme`;
+  const API_URL_USERS = `${API_BASE}/api/users`;
+  const API_URL_LAYANAN = `${API_BASE}/api/layanan`;
+  const API_URL_LAYANAN_UPLOAD = `${API_BASE}/api/layanan/upload`;
 
-  // === STATE (semua state asli + tambahan layanan/modal) ===
+  // === STATE UTAMA ===
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
   const [form, setForm] = useState({
@@ -39,11 +45,13 @@ export default function AdminDashboard() {
     telepon: "",
     ruangan: "",
     tanggal: "",
+    jam_mulai: "",
+    durasi: 1,
     detail: "",
     catatan: "",
   });
   const [editMode, setEditMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("booking");
+  const [activeTab, setActiveTab] = useState("dashboardoverview");
   const [content, setContent] = useState([]);
   const [editing, setEditing] = useState(null);
   const [landingForm, setLandingForm] = useState({});
@@ -55,12 +63,12 @@ export default function AdminDashboard() {
   });
 
   const [themeSettings, setThemeSettings] = useState({
-    theme_color: "orange",
+    theme_color: "dark",
     theme_font: "Inter",
   });
 
-  // === LAYANAN (services) related state ===
-  const [layanan, setLayanan] = useState([]); // list layanan dari API
+  // === LAYANAN ===
+  const [layanan, setLayanan] = useState([]);
   const [formLayanan, setFormLayanan] = useState({
     id: null,
     title: "",
@@ -68,141 +76,214 @@ export default function AdminDashboard() {
     image: "",
   });
   const [editLayananMode, setEditLayananMode] = useState(false);
-
-  // modal / preview state
-  const [selectedImage, setSelectedImage] = useState(null); // object layanan yang dipilih untuk preview modal
+  const [selectedImage, setSelectedImage] = useState(null);
   const [showEditLayananModal, setShowEditLayananModal] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // === PALET WARNA ===
-  const colors = {
-    dark: {
-      bgMain: "bg-gray-900",
-      textMain: "text-gray-100",
-      sidebarBg: "bg-gray-800",
-      sidebarText: "text-gray-200",
-      cardBg: "bg-gray-800/80",
-      cardBorder: "border-gray-700",
-      hoverBg: "hover:bg-gray-700",
-      tableHeader: "bg-gray-700 text-white",
-      buttonPrimary: "bg-gray-500 hover:bg-gray-600",
-      buttonDanger: "bg-red-600 hover:bg-red-700",
-      buttonGradient: "bg-gradient-to-r from-orange-500 to-yellow-400",
-    },
-    light: {
-      bgMain: "bg-gray-50",
-      textMain: "text-gray-800",
-      sidebarBg: "bg-white/80",
-      sidebarText: "text-gray-800",
-      cardBg: "bg-white/80",
-      cardBorder: "border-gray-300",
-      hoverBg: "hover:bg-gray-200",
-      tableHeader: "bg-gray-200 text-gray-700",
-      buttonPrimary: "bg-gray-400 hover:bg-gray-500",
-      buttonDanger: "bg-red-500 hover:bg-red-600",
-      buttonGradient: "bg-gradient-to-r from-orange-500 to-yellow-400",
-    },
-    orange: {
-      bgMain: "bg-gradient-to-br from-orange-50 via-white to-yellow-50",
-      textMain: "text-gray-800",
-      sidebarBg: "bg-white/80",
-      sidebarText: "text-gray-800",
-      cardBg: "bg-white/80",
-      cardBorder: "border-orange-100",
-      hoverBg: "hover:bg-orange-100",
-      tableHeader: "bg-orange-100 text-gray-700",
-      buttonPrimary: "bg-gray-400 hover:bg-gray-500",
-      buttonDanger: "bg-red-500 hover:bg-red-600",
-      buttonGradient: "bg-gradient-to-r from-orange-500 to-yellow-400",
-    },
-  };
+const colors = {
+  // === DARK THEME ===
+  dark: {
+    bgMain: "bg-gray-950", // Lebih pekat dan elegan
+    textMain: "text-gray-100", // Teks kontras tinggi
+    sidebarBg: "bg-gray-900/90 backdrop-blur-md",
+    sidebarText: "text-gray-100",
+    cardBg: "bg-gray-900/80 backdrop-blur-md shadow-lg",
+    cardBorder: "border-gray-800",
+    hoverBg: "hover:bg-gray-800/80",
+    buttonPrimary:
+      "bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg",
+    buttonDanger:
+      "bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg",
+    buttonGradient:
+      "bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:from-indigo-400 hover:to-fuchsia-400 text-white font-medium shadow-md",
+    tableHeader: "bg-gray-800 text-gray-100 font-semibold",
+    inputBg: "bg-gray-800/70 focus:bg-gray-700 focus:ring-2 focus:ring-indigo-500 transition-all",
+  },
 
-  const currentColor = colors[themeSettings.theme_color] || colors.orange;
+  // === LIGHT THEME ===
+  light: {
+    bgMain: "bg-gray-100",
+    textMain: "text-gray-800",
+    sidebarBg: "bg-white/90 backdrop-blur-md",
+    sidebarText: "text-gray-800",
+    cardBg: "bg-white shadow-md backdrop-blur-md",
+    cardBorder: "border-gray-300",
+    hoverBg: "hover:bg-gray-200",
+    buttonPrimary:
+      "bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md",
+    buttonDanger:
+      "bg-gradient-to-r from-red-500 via-pink-500 to-rose-600 hover:from-red-600 hover:to-rose-600 text-white shadow-md",
+    buttonGradient:
+      "bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 hover:from-sky-500 hover:to-indigo-500 text-white font-medium shadow",
+    tableHeader: "bg-gray-200 text-gray-800 font-semibold",
+    inputBg: "bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-400 transition-all",
+  },
 
-  // === FETCH DATA ===
+  // === ORANGE / DEFAULT THEME ===
+  orange: {
+    bgMain: "bg-gradient-to-br from-white via-orange-50 to-orange-100",
+    textMain: "text-gray-800",
+    sidebarBg: "bg-gradient-to-b from-white via-orange-50 to-orange-100 backdrop-blur-md",
+    sidebarText: "text-gray-800",
+    cardBg: "bg-white/90 backdrop-blur-md shadow-md",
+    cardBorder: "border-orange-200",
+    hoverBg: "hover:bg-orange-100/70",
+    buttonPrimary:
+      "bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 hover:from-orange-500 hover:to-amber-500 text-white shadow-md",
+    buttonDanger:
+      "bg-gradient-to-r from-red-400 via-red-500 to-rose-500 hover:from-red-500 hover:to-rose-600 text-white shadow-md",
+    buttonGradient:
+      "bg-gradient-to-r from-orange-300 via-amber-300 to-yellow-200 hover:from-orange-400 hover:to-amber-400 text-gray-900 font-semibold shadow",
+    tableHeader: "bg-orange-100 text-gray-800 font-semibold",
+    inputBg: "bg-orange-50 focus:bg-white focus:ring-2 focus:ring-orange-300 transition-all",
+  },
+};
+
+const currentColor = colors[themeSettings.theme_color] || colors.orange;
+
+
+
+// === THEME LOCALSTORAGE ===
+useEffect(() => {
+  const storedTheme = localStorage.getItem("themeSettings");
+  if (storedTheme) {
+    try {
+      setThemeSettings(JSON.parse(storedTheme));
+    } catch {
+      // Jika parsing gagal, gunakan fallback ke dark
+      setThemeSettings({ theme_color: "dark", theme_font: "Inter" });
+    }
+  } else {
+    // Jika belum ada data tersimpan, set default dark mode
+    setThemeSettings({ theme_color: "dark", theme_font: "Inter" });
+  }
+}, []);
+
+useEffect(() => {
+  localStorage.setItem("themeSettings", JSON.stringify(themeSettings));
+}, [themeSettings]);
+
+
+  // === FETCH DATA WHEN TAB CHANGES ===
   useEffect(() => {
     if (activeTab === "booking") fetchBookings();
     if (activeTab === "landing") fetchLandingContent();
     if (activeTab === "settings") fetchThemeSettings();
     if (activeTab === "users") fetchUsers();
     if (activeTab === "layanan") fetchLayanan();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
+  // === DASHBOARD OVERVIEW ===
+  const [overview, setOverview] = useState({
+    totalBookings: 0,
+    totalUsers: 0,
+    totalLayanan: 0,
+  });
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const [b, u, l] = await Promise.all([
+          axios.get(API_URL_BOOKING),
+          axios.get(API_URL_USERS),
+          axios.get(API_URL_LAYANAN),
+        ]);
+        setOverview({
+          totalBookings: Array.isArray(b.data) ? b.data.length : 0,
+          totalUsers: Array.isArray(u.data) ? u.data.length : 0,
+          totalLayanan: Array.isArray(l.data) ? l.data.length : 0,
+        });
+      } catch (err) {
+        console.error("fetchOverview:", err);
+      }
+    };
+    fetchOverview();
+    // also refresh when relevant data changes could be added
+  }, []);
+
+  // === FETCHERS ===
   const fetchBookings = async () => {
     try {
       const res = await axios.get(API_URL_BOOKING);
-      setBookings(res.data);
-    } catch (error) {
-      console.error(error);
+      setBookings(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("fetchBookings:", err);
     }
   };
-
   const fetchLandingContent = async () => {
     try {
       const res = await axios.get(API_URL_LANDING);
-      setContent(res.data);
-    } catch (error) {
-      console.error(error);
+      setContent(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("fetchLandingContent:", err);
     }
   };
-
   const fetchThemeSettings = async () => {
     try {
       const res = await axios.get(API_URL_THEME);
       if (res.data) setThemeSettings(res.data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("fetchThemeSettings:", err);
     }
   };
-
   const fetchUsers = async () => {
     try {
       const res = await axios.get(API_URL_USERS);
-      setUsers(res.data);
-    } catch (error) {
-      console.error(error);
+      setUsers(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("fetchUsers:", err);
     }
   };
-
-  // === FETCH LAYANAN ===
   const fetchLayanan = async () => {
     try {
       const res = await axios.get(API_URL_LAYANAN);
-      setLayanan(res.data);
-    } catch (error) {
-      console.error("fetchLayanan:", error);
+      setLayanan(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("fetchLayanan:", err);
     }
   };
 
-  // === DELETE USER ===
+  // === LOGOUT ===
+  const handleLogout = () => {
+    localStorage.removeItem("role");
+    alert("Anda telah logout dari Admin Dashboard");
+    navigate("/login");
+  };
+
+  // ===========================
+  // === USERS CRUD ===========
+  // ===========================
   const handleDeleteUser = async (id) => {
-    if (window.confirm("Yakin ingin menghapus user ini?")) {
-      try {
-        await axios.delete(`${API_URL_USERS}/${id}`);
-        fetchUsers();
-        alert("✅ User berhasil dihapus!");
-      } catch (error) {
-        console.error(error);
-        alert("❌ Gagal menghapus user.");
-      }
+    if (!window.confirm("Yakin ingin menghapus user ini?")) return;
+    try {
+      await axios.delete(`${API_URL_USERS}/${id}`);
+      await fetchUsers();
+      alert("✅ User berhasil dihapus!");
+    } catch (err) {
+      console.error("handleDeleteUser:", err);
+      alert("❌ Gagal menghapus user.");
     }
   };
 
+  // ===========================
+  // === THEME SAVE ===========
+  // ===========================
   const handleSaveTheme = async () => {
     try {
       await axios.put(API_URL_THEME, themeSettings);
       alert("✅ Tema berhasil diperbarui!");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("handleSaveTheme:", err);
       alert("❌ Gagal menyimpan tema.");
     }
   };
 
-  // === BOOKING HANDLER ===
-  const handleChangeBooking = (e) => {
+  // ===========================
+  // === BOOKING HANDLERS =====
+  // ===========================
+    const handleChangeBooking = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmitBooking = async (e) => {
@@ -212,8 +293,9 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      if (editMode) {
-        await axios.put(`${API_URL_BOOKING}/${form.id}`, form);
+      if (editMode && (form.id || form._id)) {
+        const id = form.id || form._id;
+        await axios.put(`${API_URL_BOOKING}/${id}`, form);
         alert("✅ Data booking diperbarui!");
       } else {
         await axios.post(API_URL_BOOKING, form);
@@ -225,61 +307,77 @@ export default function AdminDashboard() {
         telepon: "",
         ruangan: "",
         tanggal: "",
+        jam_mulai: "",
+        durasi: 1,
         detail: "",
         catatan: "",
       });
       setEditMode(false);
-      fetchBookings();
-    } catch (error) {
-      console.error(error);
-      alert("❌ Gagal menyimpan data.");
+      await fetchBookings();
+    } catch (err) {
+      console.error("handleSubmitBooking:", err);
+      alert("❌ Gagal menyimpan data booking.");
     }
   };
 
   const handleEditBooking = (b) => {
     setForm({
-      ...b,
+      id: b.id || b._id || null,
+      nama: b.nama || "",
+      telepon: b.telepon || "",
+      ruangan: b.ruangan || "",
       tanggal: b.tanggal ? new Date(b.tanggal).toISOString().split("T")[0] : "",
+      jam_mulai: b.jam_mulai || "",
+      durasi: b.durasi || 1,
+      detail: b.detail || "",
+      catatan: b.catatan || "",
     });
     setEditMode(true);
+    setActiveTab("booking");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDeleteBooking = async (id) => {
-    if (window.confirm("Yakin ingin menghapus data ini?")) {
+    if (!window.confirm("Yakin ingin menghapus data ini?")) return;
+    try {
       await axios.delete(`${API_URL_BOOKING}/${id}`);
-      fetchBookings();
+      await fetchBookings();
+      alert("✅ Booking dihapus!");
+    } catch (err) {
+      console.error("handleDeleteBooking:", err);
+      alert("❌ Gagal menghapus booking.");
     }
   };
 
-  // === LANDING HANDLER ===
+  // ===========================
+  // === LANDING HANDLERS =====
+  // ===========================
   const handleEditLanding = (section) => {
-    setEditing(section.section);
-    setLandingForm(section);
+    setEditing(section.section || section.id || section.name);
+    setLandingForm({ ...section });
+    setActiveTab("landing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSaveLanding = async () => {
+    if (!editing) return;
     try {
       await axios.put(`${API_URL_LANDING}/${editing}`, landingForm);
       alert("✅ Konten berhasil diperbarui!");
       setEditing(null);
-      fetchLandingContent();
-    } catch (error) {
-      console.error(error);
-      alert("❌ Gagal menyimpan konten.");
+      await fetchLandingContent();
+    } catch (err) {
+      console.error("handleSaveLanding:", err);
+      alert("❌ Gagal menyimpan konten landing.");
     }
   };
 
-  // === LOGOUT ===
-  const handleLogout = () => {
-    localStorage.removeItem("role");
-    alert("Anda telah logout dari Admin Dashboard");
-    navigate("/login");
-  };
-
-  // === LAYANAN (CRUD) HANDLERS ===
+  // ===========================
+  // === LAYANAN (CRUD) =======
+  // ===========================
   const handleChangeLayanan = (e) => {
     const { name, value } = e.target;
-    setFormLayanan({ ...formLayanan, [name]: value });
+    setFormLayanan((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmitLayanan = async (e) => {
@@ -289,8 +387,9 @@ export default function AdminDashboard() {
       return;
     }
     try {
-      if (editLayananMode && formLayanan.id) {
-        await axios.put(`${API_URL_LAYANAN}/${formLayanan.id}`, formLayanan);
+      if (editLayananMode && (formLayanan.id || formLayanan._id)) {
+        const id = formLayanan.id || formLayanan._id;
+        await axios.put(`${API_URL_LAYANAN}/${id}`, formLayanan);
         alert("✅ Layanan berhasil diperbarui!");
       } else {
         await axios.post(API_URL_LAYANAN, formLayanan);
@@ -298,32 +397,41 @@ export default function AdminDashboard() {
       }
       setFormLayanan({ id: null, title: "", description: "", image: "" });
       setEditLayananMode(false);
-      fetchLayanan();
-    } catch (error) {
-      console.error("handleSubmitLayanan:", error);
+      await fetchLayanan();
+    } catch (err) {
+      console.error("handleSubmitLayanan:", err);
       alert("❌ Gagal menyimpan layanan.");
     }
   };
 
   const handleEditLayanan = (item) => {
-    setFormLayanan(item);
+    setFormLayanan({
+      id: item.id || item._id || null,
+      title: item.title || "",
+      description: item.description || "",
+      image: item.image || item.imageUrl || "",
+    });
     setEditLayananMode(true);
+    setActiveTab("layanan");
     setShowEditLayananModal(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDeleteLayanan = async (id) => {
-    if (window.confirm("Yakin ingin menghapus layanan ini?")) {
-      try {
-        await axios.delete(`${API_URL_LAYANAN}/${id}`);
-        fetchLayanan();
-        alert("✅ Layanan dihapus!");
-      } catch (error) {
-        console.error("handleDeleteLayanan:", error);
-      }
+    if (!window.confirm("Yakin ingin menghapus layanan ini?")) return;
+    try {
+      await axios.delete(`${API_URL_LAYANAN}/${id}`);
+      await fetchLayanan();
+      alert("✅ Layanan dihapus!");
+    } catch (err) {
+      console.error("handleDeleteLayanan:", err);
+      alert("❌ Gagal menghapus layanan.");
     }
   };
 
-  // Upload gambar layanan (file)
+  // ===========================
+  // === IMAGE UPLOAD ========
+  // ===========================
   const handleUploadImageFile = async (file) => {
     if (!file) return null;
     setUploading(true);
@@ -333,37 +441,36 @@ export default function AdminDashboard() {
       const res = await axios.post(API_URL_LAYANAN_UPLOAD, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      // backend diharapkan mengembalikan { imageUrl: "..." } atau directly image path
       setUploading(false);
+      // expect backend returns { imageUrl: "https://..." } OR { url: "..." }
       return res.data.imageUrl || res.data.url || res.data.path || null;
-    } catch (error) {
-      console.error("handleUploadImageFile:", error);
+    } catch (err) {
+      console.error("handleUploadImageFile:", err);
       setUploading(false);
-      alert("❌ Gagal upload gambar. Cek backend upload endpoint.");
+      alert("❌ Gagal upload gambar. Periksa endpoint upload backend.");
       return null;
     }
   };
 
-  // Handle file input change in edit modal
+  // file input handler helper for layanan
   const handleFileChangeForLayanan = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const uploadedUrl = await handleUploadImageFile(file);
-    if (uploadedUrl) {
-      setFormLayanan({ ...formLayanan, image: uploadedUrl });
-    }
+    if (uploadedUrl) setFormLayanan((prev) => ({ ...prev, image: uploadedUrl }));
   };
 
-  // === Modal open for image preview (landing or layanan) ===
+  // ===========================
+  // === IMAGE PREVIEW ========
+  // ===========================
   const openImagePreview = (item) => {
     setSelectedImage(item);
   };
+  const closeImagePreview = () => setSelectedImage(null);
 
-  const closeImagePreview = () => {
-    setSelectedImage(null);
-  };
-
-  // === RENDER ===
+  // ===========================
+  // === JSX RENDER ===========
+  // ===========================
   return (
     <div
       className={`flex min-h-screen font-[${themeSettings.theme_font}] transition-all duration-500 ${currentColor.bgMain} ${currentColor.textMain}`}
@@ -374,37 +481,53 @@ export default function AdminDashboard() {
       >
         <div>
           <div className="flex flex-col items-center mb-8">
-            <img src={image14} alt="Logo" className="w-12 h-12 mb-2" />
-            <h2 className="text-lg font-semibold text-orange-600">Admin Panel</h2>
+            <img
+              src={image14}
+              alt="Logo"
+              className="w-14 h-14 mb-2 rounded-full ring-2 ring-orange-400 shadow-lg hover:scale-110 transition-transform"
+            />
+            <h2 className="text-lg font-semibold text-orange-600 mt-2">
+              Admin Panel
+            </h2>
           </div>
 
-          <nav className="flex flex-col space-y-3 px-4">
+          {/* === NAVIGATION === */}
+          <nav className="flex flex-col space-y-2 px-4">
             {[
-              { id: "booking", icon: <FaClipboardList />, label: "Kelola Booking" },
-              { id: "users", icon: <FaUsers />, label: "Kelola User" },
-              { id: "layanan", icon: <FaImage />, label: "Kelola Layanan" },
-              { id: "landing", icon: <FaChartBar />, label: "Landing Page" },
-              { id: "settings", icon: <FaCog />, label: "Pengaturan Tema" },
+              { id: "dashboardoverview", icon: <FaTachometerAlt />, label: "Dashboard Overview" },
+              { id: "booking", icon: <FaCalendarCheck />, label: "Kelola Booking" },
+              { id: "users", icon: <FaUserFriends />, label: "Kelola User" },
+              { id: "layanan", icon: <FaBoxes />, label: "Kelola Layanan" },
+              { id: "landing", icon: <FaLayerGroup />, label: "Landing Page" },
+              { id: "settings", icon: <FaPalette />, label: "Pengaturan Tema" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group ${
                   activeTab === tab.id
-                    ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-white shadow-md"
-                    : currentColor.hoverBg
+                    ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-white shadow-lg scale-[1.02]"
+                    : `${currentColor.hoverBg} hover:translate-x-1`
                 }`}
               >
-                {tab.icon} {tab.label}
+                <span
+                  className={`text-lg ${
+                    activeTab === tab.id ? "scale-110" : "group-hover:scale-110 text-orange-400"
+                  }`}
+                >
+                  {tab.icon}
+                </span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
         </div>
 
+        {/* === LOGOUT === */}
         <div className="text-center mt-8">
           <button
             onClick={handleLogout}
-            className={`${currentColor.buttonDanger} text-white px-4 py-2 rounded-md font-medium flex items-center gap-2 mx-auto transition duration-300 hover:shadow-lg`}
+            className={`${currentColor.buttonDanger} text-white px-5 py-2 rounded-xl font-medium flex items-center gap-2 mx-auto hover:shadow-lg hover:scale-105 transition-all`}
           >
             <FaSignOutAlt /> Logout
           </button>
@@ -413,29 +536,43 @@ export default function AdminDashboard() {
 
       {/* === MAIN CONTENT === */}
       <main className="flex-1 p-8 overflow-y-auto">
-        {/* === HEADER === */}
         <nav
-          className={`flex justify-between items-center ${currentColor.cardBg} backdrop-blur-md border ${currentColor.cardBorder} shadow-md rounded-xl px-6 py-4 mb-8`}
+          className={`flex justify-between items-center ${currentColor.cardBg} border ${currentColor.cardBorder} shadow-md rounded-xl px-6 py-4 mb-8`}
         >
-          <h1 className="text-xl md:text-2xl font-semibold capitalize">
-            {activeTab === "booking"
-              ? "📋 Kelola Booking"
-              : activeTab === "users"
-              ? "👥 Kelola User"
-              : activeTab === "layanan"
-              ? "🧰 Kelola Layanan"
-              : activeTab === "landing"
-              ? "📈 Kelola Landing Page"
-              : "⚙️ Pengaturan Tema"}
+          <h1 className="text-xl font-semibold capitalize">
+            {activeTab === "dashboardoverview" && "Dashboard Overview"}
+            {activeTab === "booking" && "Kelola Booking"}
+            {activeTab === "users" && "Kelola User"}
+            {activeTab === "layanan" && "Kelola Layanan"}
+            {activeTab === "landing" && "Kelola Landing Page"}
+            {activeTab === "settings" && "Pengaturan Tema"}
           </h1>
-
           <button
             onClick={() => navigate("/")}
-            className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition-all`}
+            className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg hover:scale-105 transition-all`}
           >
             Kembali ke Landing Page
           </button>
         </nav>
+
+        {/* === DASHBOARD OVERVIEW === */}
+        {activeTab === "dashboardoverview" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {[
+              { title: "Total Booking", value: overview.totalBookings, color: "text-orange-500" },
+              { title: "Total Users", value: overview.totalUsers, color: "text-blue-500" },
+              { title: "Total Layanan", value: overview.totalLayanan, color: "text-green-500" },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className={`p-6 rounded-2xl shadow-xl border ${currentColor.cardBorder} ${currentColor.cardBg} hover:scale-105 transition-all`}
+              >
+                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* === TAB USERS === */}
         {activeTab === "users" && (
@@ -445,63 +582,6 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <FaUsers className="text-orange-500" /> Kelola User Terdaftar
             </h2>
-
-            {/* === FORM TAMBAH USER === */}
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!newUser.name || !newUser.email || !newUser.password) {
-                  alert("Nama, email, dan password wajib diisi!");
-                  return;
-                }
-                try {
-                  await axios.post(API_URL_USERS, newUser);
-                  alert("✅ User berhasil ditambahkan!");
-                  setNewUser({ name: "", email: "", password: "", role: "user" });
-                  fetchUsers();
-                } catch (error) {
-                  console.error(error);
-                  alert("❌ Gagal menambahkan user.");
-                }
-              }}
-              className="mb-6 grid md:grid-cols-4 gap-3 items-end"
-            >
-              <input
-                type="text"
-                placeholder="Nama Lengkap"
-                value={newUser.name}
-                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={newUser.password}
-                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              />
-              <select
-                value={newUser.role}
-                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-              <button
-                type="submit"
-                className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition`}
-              >
-                <FaPlus /> Tambah User
-              </button>
-            </form>
 
             {/* === TABEL USER === */}
             {users.length === 0 ? (
@@ -521,111 +601,116 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u, i) => (
-                    <tr key={u.id}>
-                      <td className="border p-2">{i + 1}</td>
-                      <td className="border p-2">{u.name}</td>
-                      <td className="border p-2">{u.email}</td>
-                      <td className="border p-2 capitalize">{u.role}</td>
-                      <td className="border p-2">
-                        {new Date(u.created_at).toLocaleString()}
-                      </td>
-                      <td className="border p-2">
-                        <button
-                          onClick={() => handleDeleteUser(u.id)}
-                          className={`${currentColor.buttonDanger} text-white px-2 py-1 rounded text-xs flex items-center gap-1 mx-auto`}
-                        >
-                          <FaTrash /> Hapus
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {users.map((u, i) => {
+                    const id = u.id || u._id;
+                    const created = u.created_at || u.createdAt || u.created || null;
+                    return (
+                      <tr key={id || i}>
+                        <td className="border p-2">{i + 1}</td>
+                        <td className="border p-2">{u.name}</td>
+                        <td className="border p-2">{u.email}</td>
+                        <td className="border p-2 capitalize">{u.role}</td>
+                        <td className="border p-2">
+                          {created ? new Date(created).toLocaleString() : "-"}
+                        </td>
+                        <td className="border p-2">
+                          <button
+                            onClick={() => handleDeleteUser(id)}
+                            className={`${currentColor.buttonDanger} text-white px-2 py-1 rounded text-xs flex items-center gap-1 mx-auto`}
+                          >
+                            <FaTrash /> Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
           </div>
         )}
 
-        {/* === TAB LAYANAN (baru terintegrasi) === */}
+        {/* === TAB LAYANAN === */}
         {activeTab === "layanan" && (
           <div className={`${currentColor.cardBg} p-6 rounded-2xl shadow-xl border ${currentColor.cardBorder}`}>
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <FaImage className="text-orange-500" /> Kelola Layanan
             </h2>
 
-            {/* Form Layanan (URL atau upload) */}
-            <form onSubmit={handleSubmitLayanan} className="grid md:grid-cols-3 gap-3 mb-6">
-              <input
-                type="text"
-                name="title"
-                value={formLayanan.title}
-                onChange={handleChangeLayanan}
-                placeholder="Judul layanan"
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              />
-              <input
-                type="text"
-                name="description"
-                value={formLayanan.description}
-                onChange={handleChangeLayanan}
-                placeholder="Deskripsi"
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              />
-              <input
-                type="text"
-                name="image"
-                value={formLayanan.image}
-                onChange={handleChangeLayanan}
-                placeholder="URL Gambar (atau kosong jika upload file)"
-                className="border border-gray-300 rounded-lg px-3 py-2"
-              />
+        {/* Form Layanan (URL atau upload) */}
+        <form onSubmit={handleSubmitLayanan} className="grid md:grid-cols-3 gap-3 mb-6">
+        <input
+          type="text"
+          name="title"
+          value={formLayanan.title}
+          onChange={handleChangeLayanan}
+          placeholder="Judul layanan"
+          className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+        />
 
-              {/* file upload */}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files && e.target.files[0];
-                  if (!file) return;
-                  const uploadedUrl = await handleUploadImageFile(file);
-                  if (uploadedUrl) setFormLayanan((prev) => ({ ...prev, image: uploadedUrl }));
-                }}
-                className="col-span-3"
-              />
+        <input
+          type="text"
+          name="description"
+          value={formLayanan.description}
+          onChange={handleChangeLayanan}
+          placeholder="Deskripsi"
+          className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+        />
 
-              <button
-                type="submit"
-                className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition col-span-3`}
-              >
-                {editLayananMode ? "Simpan Perubahan" : "Tambah Layanan"}
-              </button>
-            </form>
+        <input
+          type="text"
+          name="image"
+          value={formLayanan.image}
+          onChange={handleChangeLayanan}
+          placeholder="URL Gambar (atau kosong jika upload file)"
+          className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+        />
+
+        {/* File upload */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChangeForLayanan}
+          className={`col-span-3 ${currentColor.textMain}`}
+        />
+
+        <button
+          type="submit"
+          className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition col-span-3`}
+        >
+          {editLayananMode ? "Simpan Perubahan" : "Tambah Layanan"}
+        </button>
+        </form>
+
 
             {/* Grid Layanan */}
             {layanan.length === 0 ? (
               <p className="text-center text-gray-500 py-4">Belum ada data layanan.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {layanan.map((l, i) => (
-                  <div key={l.id} className={`p-4 border ${currentColor.cardBorder} ${currentColor.cardBg} rounded-xl shadow-md`}>
-                    <img
-                      src={l.image || "https://via.placeholder.com/300"}
-                      alt={l.title}
-                      className="w-full h-40 object-cover rounded mb-3 cursor-pointer"
-                      onClick={() => openImagePreview(l)}
-                    />
-                    <h3 className="font-semibold text-lg">{l.title}</h3>
-                    <p className="text-sm mb-3">{l.description}</p>
-                    <div className="flex justify-between">
-                      <button onClick={() => handleEditLayanan(l)} className={`${currentColor.buttonPrimary} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}>
-                        <FaEdit /> Edit
-                      </button>
-                      <button onClick={() => handleDeleteLayanan(l.id)} className={`${currentColor.buttonDanger} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}>
-                        <FaTrash /> Hapus
-                      </button>
+                {layanan.map((l, i) => {
+                  const id = l.id || l._id || i;
+                  return (
+                    <div key={id} className={`p-4 border ${currentColor.cardBorder} ${currentColor.cardBg} rounded-xl shadow-md`}>
+                      <img
+                        src={l.image || l.imageUrl || "https://via.placeholder.com/300"}
+                        alt={l.title}
+                        className="w-full h-40 object-cover rounded mb-3 cursor-pointer"
+                        onClick={() => openImagePreview(l)}
+                      />
+                      <h3 className="font-semibold text-lg">{l.title}</h3>
+                      <p className="text-sm mb-3">{l.description}</p>
+                      <div className="flex justify-between">
+                        <button onClick={() => handleEditLayanan(l)} className={`${currentColor.buttonPrimary} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}>
+                          <FaEdit /> Edit
+                        </button>
+                        <button onClick={() => handleDeleteLayanan(id)} className={`${currentColor.buttonDanger} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}>
+                          <FaTrash /> Hapus
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -681,14 +766,18 @@ export default function AdminDashboard() {
             <div
               className={`${currentColor.cardBg} backdrop-blur-sm shadow-xl rounded-2xl p-6 mb-10 border ${currentColor.cardBorder}`}
             >
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <FaPlus className="text-orange-500" />
+              <h2 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${currentColor.textMain}`}>
+                <FaPlus className={
+                  themeSettings.theme_color === "dark"
+                    ? "text-indigo-400"
+                    : themeSettings.theme_color === "light"
+                    ? "text-blue-500"
+                    : "text-orange-500"
+                } />
                 {editMode ? "Edit Booking" : "Tambah Booking"}
               </h2>
-              <form
-                onSubmit={handleSubmitBooking}
-                className="grid md:grid-cols-2 gap-4"
-              >
+
+              <form onSubmit={handleSubmitBooking} className="grid md:grid-cols-2 gap-4">
                 {["nama", "telepon", "detail"].map((f) => (
                   <input
                     key={f}
@@ -703,14 +792,15 @@ export default function AdminDashboard() {
                         ? "Nomor Telepon"
                         : "Detail Pesanan"
                     }
-                    className="border border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 rounded-lg px-3 py-2 transition"
+                    className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
                   />
                 ))}
+
                 <select
                   name="ruangan"
                   value={form.ruangan}
                   onChange={handleChangeBooking}
-                  className="border border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 rounded-lg px-3 py-2"
+                  className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
                 >
                   <option value="">Pilih Ruangan</option>
                   <option value="Ruang Podcast">Ruang Podcast</option>
@@ -718,21 +808,42 @@ export default function AdminDashboard() {
                   <option value="Ruang Kerja">Ruang Kerja</option>
                   <option value="Studio">Studio</option>
                 </select>
+
                 <input
                   type="date"
                   name="tanggal"
                   value={form.tanggal}
                   onChange={handleChangeBooking}
-                  className="border border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 rounded-lg px-3 py-2"
+                  className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
                 />
+
+                <input
+                  type="time"
+                  name="jam_mulai"
+                  value={form.jam_mulai}
+                  onChange={handleChangeBooking}
+                  className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+                />
+
+                <input
+                  type="number"
+                  name="durasi"
+                  min="1"
+                  value={form.durasi}
+                  onChange={handleChangeBooking}
+                  className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+                />
+
                 <textarea
                   name="catatan"
                   value={form.catatan}
                   onChange={handleChangeBooking}
                   placeholder="Catatan tambahan..."
                   rows="3"
-                  className="md:col-span-2 border border-gray-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-200 rounded-lg px-3 py-2"
+                  className={`md:col-span-2 ${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
                 ></textarea>
+
+
                 <button
                   type="submit"
                   className={`${currentColor.buttonPrimary} text-white py-2 rounded-lg hover:shadow-lg transition col-span-2`}
@@ -746,13 +857,9 @@ export default function AdminDashboard() {
             <div
               className={`${currentColor.cardBg} backdrop-blur-sm border ${currentColor.cardBorder} shadow-xl rounded-2xl p-6 overflow-x-auto`}
             >
-              <h2 className="text-lg font-semibold mb-4">
-                Daftar Booking Customer
-              </h2>
+              <h2 className="text-lg font-semibold mb-4">Daftar Booking Customer</h2>
               {bookings.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-4">
-                  Belum ada data booking.
-                </p>
+                <p className="text-gray-500 text-sm text-center py-4">Belum ada data booking.</p>
               ) : (
                 <table className="w-full border-collapse text-sm text-center">
                   <thead>
@@ -770,33 +877,36 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {bookings.map((b, i) => (
-                      <tr key={b.id}>
-                        <td className="border p-2">{i + 1}</td>
-                        <td className="border p-2">{b.nama}</td>
-                        <td className="border p-2">{b.telepon}</td>
-                        <td className="border p-2">{b.ruangan}</td>
-                        <td className="border p-2">{b.tanggal}</td>
-                        <td className="border p-2">{b.jam_mulai}</td>
-                        <td className="border p-2">{b.durasi} jam</td>
-                        <td className="border p-2">{b.detail}</td>
-                        <td className="border p-2">{b.catatan}</td>
-                        <td className="border p-2 flex justify-center gap-2">
-                          <button
-                            onClick={() => handleEditBooking(b)}
-                            className={`${currentColor.buttonPrimary} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
-                          >
-                            <FaEdit /> Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteBooking(b.id)}
-                            className={`${currentColor.buttonDanger} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
-                          >
-                            <FaTrash /> Hapus
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {bookings.map((b, i) => {
+                      const id = b.id || b._id || i;
+                      return (
+                        <tr key={id}>
+                          <td className="border p-2">{i + 1}</td>
+                          <td className="border p-2">{b.nama}</td>
+                          <td className="border p-2">{b.telepon}</td>
+                          <td className="border p-2">{b.ruangan}</td>
+                          <td className="border p-2">{b.tanggal}</td>
+                          <td className="border p-2">{b.jam_mulai || "-"}</td>
+                          <td className="border p-2">{b.durasi || "-"} jam</td>
+                          <td className="border p-2">{b.detail}</td>
+                          <td className="border p-2">{b.catatan}</td>
+                          <td className="border p-2 flex justify-center gap-2">
+                            <button
+                              onClick={() => handleEditBooking(b)}
+                              className={`${currentColor.buttonPrimary} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
+                            >
+                              <FaEdit /> Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBooking(id)}
+                              className={`${currentColor.buttonDanger} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
+                            >
+                              <FaTrash /> Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
@@ -808,7 +918,7 @@ export default function AdminDashboard() {
         {activeTab === "landing" && (
           <div>
             <table className="w-full text-left border-collapse border border-orange-100 rounded-lg overflow-hidden shadow-sm">
-              <thead className="bg-orange-50">
+              <thead className="bg-white-50">
                 <tr>
                   <th className="p-2 border">Section</th>
                   <th className="p-2 border">Title</th>
@@ -817,39 +927,50 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {content.map((c) => (
-                  <tr key={c.id}>
-                    <td className="border p-2">{c.section}</td>
-                    <td className="border p-2">{c.title}</td>
-                    <td className="border p-2">{c.subtitle}</td>
-                    <td className="border p-2 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleEditLanding(c)}
-                          className="bg-orange-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-600"
-                        >
-                          <FaEdit /> Edit
-                        </button>
-
-                        {/* Jika ada gambar di konten landing, tombol lihat gambar */}
-                        {c.image && (
+                {content.map((c) => {
+                  const id = c.id || c._id || c.section || Math.random();
+                  return (
+                    <tr key={id}>
+                      <td className="border p-2">{c.section}</td>
+                      <td className="border p-2">{c.title}</td>
+                      <td className="border p-2">{c.subtitle}</td>
+                      <td className="border p-2 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => openImagePreview(c)}
-                            className="bg-white border px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-50"
+                            onClick={() => handleEditLanding(c)}
+                            className="bg-orange-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-600"
                           >
-                            <FaEye /> Lihat Gambar
+                            <FaEdit /> Edit
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+
+                          {/* Jika ada gambar di konten landing, tombol lihat gambar */}
+                          {c.image && (
+                            <button
+                              onClick={() => openImagePreview(c)}
+                              className="bg-white border px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-50"
+                            >
+                              <FaEye /> Lihat Gambar
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 
             {editing && (
-              <div className="mt-6 bg-orange-50 p-4 rounded-xl shadow-inner">
+              <div
+                className={`mt-6 p-4 rounded-xl shadow-inner ${
+                  themeSettings.theme_color === "dark"
+                    ? "bg-gray-800 border border-gray-700"
+                    : "bg-orange-50 border border-orange-100"
+                }`}
+              >
                 <h3 className="font-semibold mb-2 capitalize">Edit {editing}</h3>
+
+                {/* === Input Title === */}
                 <input
                   type="text"
                   value={landingForm.title || ""}
@@ -857,17 +978,29 @@ export default function AdminDashboard() {
                     setLandingForm({ ...landingForm, title: e.target.value })
                   }
                   placeholder="Title"
-                  className="w-full mb-2 p-2 border border-orange-200 rounded-lg"
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
+                    themeSettings.theme_color === "dark"
+                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
+                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
+                  }`}
                 />
+
+                {/* === Input Subtitle === */}
                 <textarea
                   value={landingForm.subtitle || ""}
                   onChange={(e) =>
                     setLandingForm({ ...landingForm, subtitle: e.target.value })
                   }
                   placeholder="Subtitle"
-                  className="w-full mb-2 p-2 border border-orange-200 rounded-lg"
                   rows="3"
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
+                    themeSettings.theme_color === "dark"
+                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
+                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
+                  }`}
                 />
+
+                {/* === Input URL Gambar === */}
                 <input
                   type="text"
                   value={landingForm.image || ""}
@@ -875,8 +1008,14 @@ export default function AdminDashboard() {
                     setLandingForm({ ...landingForm, image: e.target.value })
                   }
                   placeholder="URL Gambar"
-                  className="w-full mb-2 p-2 border border-orange-200 rounded-lg"
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
+                    themeSettings.theme_color === "dark"
+                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
+                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
+                  }`}
                 />
+
+                {/* === Upload File === */}
                 <input
                   type="file"
                   accept="image/*"
@@ -884,10 +1023,17 @@ export default function AdminDashboard() {
                     const file = e.target.files && e.target.files[0];
                     if (!file) return;
                     const uploadedUrl = await handleUploadImageFile(file);
-                    if (uploadedUrl) setLandingForm({ ...landingForm, image: uploadedUrl });
+                    if (uploadedUrl)
+                      setLandingForm({ ...landingForm, image: uploadedUrl });
                   }}
-                  className="w-full mb-2"
+                  className={`w-full mb-2 ${
+                    themeSettings.theme_color === "dark"
+                      ? "text-gray-200"
+                      : "text-gray-700"
+                  }`}
                 />
+
+                {/* === Input Teks Tombol === */}
                 <input
                   type="text"
                   value={landingForm.button_text || ""}
@@ -895,8 +1041,14 @@ export default function AdminDashboard() {
                     setLandingForm({ ...landingForm, button_text: e.target.value })
                   }
                   placeholder="Teks Tombol"
-                  className="w-full mb-2 p-2 border border-orange-200 rounded-lg"
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
+                    themeSettings.theme_color === "dark"
+                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
+                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
+                  }`}
                 />
+
+                {/* === Input Link Tombol === */}
                 <input
                   type="text"
                   value={landingForm.button_link || ""}
@@ -904,7 +1056,11 @@ export default function AdminDashboard() {
                     setLandingForm({ ...landingForm, button_link: e.target.value })
                   }
                   placeholder="Link Tombol"
-                  className="w-full mb-4 p-2 border border-orange-200 rounded-lg"
+                  className={`w-full mb-4 p-2 rounded-lg border transition-all duration-300 ${
+                    themeSettings.theme_color === "dark"
+                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
+                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
+                  }`}
                 />
                 <button
                   onClick={handleSaveLanding}
@@ -936,12 +1092,19 @@ export default function AdminDashboard() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start">
-                <h3 className="text-xl font-semibold">{selectedImage.title || selectedImage.name || selectedImage.section}</h3>
+                <h3 className="text-xl font-semibold">
+                  {selectedImage.title || selectedImage.name || selectedImage.section || "Preview"}
+                </h3>
                 <button onClick={closeImagePreview} className="text-gray-500 hover:text-gray-800">Tutup</button>
               </div>
               <div className="mt-4">
                 <img
-                  src={selectedImage.image || selectedImage.image_url || selectedImage.imageUrl || "https://via.placeholder.com/800x400"}
+                  src={
+                    selectedImage.image ||
+                    selectedImage.image_url ||
+                    selectedImage.imageUrl ||
+                    "https://via.placeholder.com/800x400"
+                  }
                   alt={selectedImage.title || selectedImage.name || "Preview"}
                   className="w-full object-contain rounded-lg"
                 />

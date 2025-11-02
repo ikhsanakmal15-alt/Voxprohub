@@ -17,3 +17,4 @@ router.get("/:section", getLandingSection);
 router.put("/:section", updateLandingSection);
 
 export default router;
+//

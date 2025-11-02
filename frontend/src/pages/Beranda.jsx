@@ -1,35 +1,33 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import rectangle169 from "../assets/kontak1.png";
 
 export default function Beranda() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-50 to-orange-100 flex flex-col justify-center items-center text-center text-gray-800 px-6 relative font-[Poppins]">
-       {/* Tombol Kembali */}
+    <div className="min-h-screen flex flex-col justify-center items-center text-center bg-orange-50 text-gray-800 px-6 relative">
+      {/* Tombol Kembali */}
       <button
         onClick={() => navigate("/")}
-        className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white/90 text-orange-600 px-3 py-1.5 rounded-full shadow-sm text-sm font-medium hover:bg-orange-100 hover:scale-105 transition-all duration-200"
+        className="absolute top-6 left-1/2 -translate-x-1/2 bg-white text-orange-600 px-3 py-1.5 rounded-full shadow hover:bg-orange-100 transition"
       >
-        <span className="text-base">←</span> Kembali ke Beranda
+        ← Kembali
       </button>
 
       {/* Konten */}
-      <h1 className="text-3xl md:text-4xl font-bold drop-shadow-sm text-gray-900">
+      <h1 className="text-3xl font-bold text-gray-900">
         Selamat Datang di <span className="text-orange-600">Voxpro Hub</span>
       </h1>
-      <p className="mt-6 text-base md:text-lg max-w-3xl leading-relaxed text-gray-700">
-        <strong>Voxpro Hub</strong> adalah perusahaan penyedia ruang kerja dan ruang
-        kreatif di Kota Makassar. Kami menghadirkan solusi bagi individu dan
-        bisnis untuk berkolaborasi, berkreasi, dan berinovasi dalam suasana modern
-        dan nyaman.
+      <p className="mt-4 max-w-2xl text-gray-700">
+        <strong>Voxpro Hub</strong> adalah ruang kerja dan kreatif di Makassar
+        yang mendukung kolaborasi, inovasi, dan kenyamanan bagi individu maupun bisnis.
       </p>
 
+      {/* Gambar */}
       <img
-        src={rectangle169}
+        src="https://via.placeholder.com/600x300"
         alt="Voxpro Hub"
-        className="mt-10 rounded-2xl shadow-xl w-full max-w-3xl object-cover border-4 border-white/50"
+        className="mt-8 w-full max-w-3xl rounded-2xl shadow-md border border-white"
       />
     </div>
   );

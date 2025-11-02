@@ -54,24 +54,25 @@ export default function DetailLayanan() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8f7f6] text-gray-800 font-[Poppins] overflow-x-hidden">
+    <div className="min-h-screen bg-[#f0f4ff] text-gray-800 font-[Poppins] overflow-x-hidden">
       {/* === NAVBAR === */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scroll
-            ? "bg-white/80 shadow-lg backdrop-blur-md py-2"
-            : "bg-transparent py-4"
+          scroll ? "bg-white/80 shadow-lg backdrop-blur-md py-2" : "bg-transparent py-4"
         }`}
       >
         <div className="max-w-6xl mx-auto px-5 flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <img src={image14} alt="Logo" className="w-8 h-8" />
-            <h1 className="font-semibold text-lg text-[#d26b33] tracking-wide">
+            <h1 className="font-semibold text-lg text-blue-600 tracking-wide">
               VOXPRO HUB
             </h1>
           </div>
 
-          {/* === MENU DESKTOP === */}
+          {/* Menu Desktop */}
           <div className="hidden md:flex gap-8 text-gray-700 font-medium">
             {[
               { name: "Beranda", path: "/" },
@@ -82,8 +83,8 @@ export default function DetailLayanan() {
               <button
                 key={item.name}
                 onClick={() => navigate(item.path)}
-                className={`relative hover:text-[#d26b33] transition duration-300 after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-[#d26b33] after:left-0 after:-bottom-1 hover:after:w-full after:transition-all after:duration-300 ${
-                  item.name === "Kontak" ? "text-[#d26b33] font-semibold" : ""
+                className={`relative hover:text-blue-600 transition duration-300 after:content-[''] after:absolute after:w-0 after:h-[2px] after:bg-blue-600 after:left-0 after:-bottom-1 hover:after:w-full after:transition-all after:duration-300 ${
+                  item.name === "Fasilitas" ? "text-blue-600 font-semibold" : ""
                 }`}
               >
                 {item.name}
@@ -91,10 +92,10 @@ export default function DetailLayanan() {
             ))}
           </div>
 
-          {/* === MENU MOBILE BUTTON === */}
+          {/* Menu Mobile */}
           <button className="md:hidden" onClick={() => setOpen(!open)}>
             <svg
-              className="w-6 h-6 text-[#d26b33]"
+              className="w-6 h-6 text-blue-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -109,19 +110,18 @@ export default function DetailLayanan() {
           </button>
         </div>
 
-        {/* === MENU MOBILE === */}
         <div
           className={`md:hidden bg-white/90 backdrop-blur-md overflow-hidden transition-all duration-500 ${
             open ? "max-h-64 py-4" : "max-h-0"
           }`}
         >
           <div className="flex flex-col items-center gap-3 text-gray-700 font-medium text-sm">
-            {["Beranda", "Booking", "Kontak", "Fasilitas"].map((item) => (
+            {["Beranda", "Booking", "Fasilitas", "Kontak"].map((item) => (
               <Link
                 key={item}
                 to={`/${item.toLowerCase()}`}
                 onClick={() => setOpen(false)}
-                className="hover:text-[#d26b33] transition"
+                className="hover:text-blue-600 transition"
               >
                 {item}
               </Link>
@@ -131,23 +131,23 @@ export default function DetailLayanan() {
       </nav>
 
       {/* === HERO === */}
-      <section className="relative h-[480px] md:h-[520px] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent z-10" />
+      <section className="relative h-[480px] md:h-[560px] w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-transparent z-10" />
         <img
           src={podcastRoom}
           alt="Hero Background"
           className="object-cover w-full h-full brightness-90"
         />
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-20">
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-20 px-4">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-3xl md:text-5xl font-semibold tracking-wide drop-shadow-lg"
+            className="text-5xl md:text-6xl font-bold tracking-wide drop-shadow-lg leading-tight"
           >
             Inspirasi, Kreativitas, dan Kolaborasi
           </motion.h1>
-          <p className="mt-4 text-sm md:text-lg max-w-2xl text-gray-200">
+          <p className="mt-5 text-lg md:text-xl max-w-2xl text-gray-200 font-medium">
             Temukan ruang yang dirancang untuk mendukung setiap ide besar dan proses kreatifmu.
           </p>
         </div>
@@ -175,11 +175,11 @@ export default function DetailLayanan() {
                 scale: 1.02,
                 boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
               }}
-              className="w-[260px] md:w-[280px] bg-white rounded-2xl shadow-sm overflow-hidden transition-all duration-500 hover:bg-[#f8f5f2]"
+              className="w-[260px] md:w-[280px] bg-white rounded-2xl shadow-sm overflow-hidden transition-all duration-500 hover:bg-[#e8f0ff]"
             >
               <div className="p-5 flex flex-col justify-between h-[520px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-[#b85c2c] mb-2">
+                  <h3 className="text-lg font-semibold text-blue-600 mb-2">
                     {item.title}
                   </h3>
                   <p className="text-sm text-gray-700 leading-relaxed mb-4">
@@ -199,10 +199,9 @@ export default function DetailLayanan() {
         </div>
       </section>
 
-
       {/* === FOOTER === */}
-      <footer className="bg-[#fbfbfb] text-gray-700 text-center py-10 mt-16 rounded-t-3xl shadow-inner">
-        <h2 className="text-lg font-semibold mb-2 tracking-wide text-[#b85c2c]">
+      <footer className="bg-[#e6edff] text-gray-700 text-center py-10 mt-16 rounded-t-3xl shadow-inner font-[Poppins]">
+        <h2 className="text-lg font-semibold mb-2 tracking-wide text-blue-600">
           VOXPRO HUB
         </h2>
         <p className="text-sm max-w-md mx-auto mb-3">
@@ -211,7 +210,7 @@ export default function DetailLayanan() {
         <p className="text-xs text-gray-500">
           © {new Date().getFullYear()} VoxPro Hub. All rights reserved.
         </p>
-      </footer>  
-      </div>
+      </footer>
+    </div>
   );
 }

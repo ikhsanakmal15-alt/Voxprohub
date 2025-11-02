@@ -33,3 +33,4 @@ export const updateLandingSection = (req, res) => {
     res.json({ message: "Section updated successfully" });
   });
 };
+//

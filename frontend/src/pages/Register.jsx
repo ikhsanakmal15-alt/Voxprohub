@@ -51,16 +51,8 @@ export default function Register() {
       <div className="absolute inset-0 backdrop-blur-3xl bg-white/30"></div>
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-white/40 blur-3xl rounded-full shadow-[0_0_50px_rgba(0,0,0,0.1)]"></div>
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gray-300/30 blur-3xl rounded-full shadow-[0_0_60px_rgba(0,0,0,0.1)]"></div>
-
       <div className="relative bg-white/70 backdrop-blur-2xl border border-gray-200 rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.1)] p-10 w-full max-w-md transform transition-all hover:shadow-[0_10px_50px_rgba(0,0,0,0.15)] hover:scale-[1.01]">
-        {/* Tombol kembali */}
-        <button
-          onClick={() => navigate("/")}
-          className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
-        >
-          <FaArrowLeft className="text-lg" />
-          <span className="text-sm font-semibold">Kembali</span>
-        </button>
+
 
         {/* Header */}
         <div className="flex flex-col items-center mb-8 mt-6">

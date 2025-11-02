@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa"; // ✅ Tambahkan ini
+import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa";
 import image14 from "../assets/image14.png";
 import googleLogo from "../assets/google-logo.png";
 
@@ -10,6 +10,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  // === ADMIN LOGIN KONFIGURASI ===
   const ADMIN_EMAIL = "voxprohub@gmail.com";
   const ADMIN_PASSWORD = "admin123";
 
@@ -21,6 +22,7 @@ export default function Login() {
       return;
     }
 
+    // === LOGIN ADMIN LOKAL ===
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       alert("Login berhasil sebagai Admin!");
       localStorage.setItem("role", "admin");
@@ -29,6 +31,7 @@ export default function Login() {
       return;
     }
 
+    // === LOGIN USER BIASA VIA API ===
     try {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
@@ -39,11 +42,20 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert(`Login berhasil sebagai ${data.role || "user"}!`);
+        const userRole = data.role || "user"; // fallback jika role tidak ada
+        alert(`Login berhasil sebagai ${userRole}!`);
+
+        // Simpan data ke localStorage
         localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role || "user");
+        localStorage.setItem("role", userRole);
         localStorage.setItem("name", data.name);
-        navigate("/");
+
+        // Arahkan berdasarkan role
+        if (userRole === "admin") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/");
+        }
       } else {
         alert(data.message || "Login gagal!");
       }
@@ -53,6 +65,7 @@ export default function Login() {
     }
   };
 
+  // === LOGIN GOOGLE (SIMULASI) ===
   const handleGoogleSignIn = () => {
     alert("Login dengan Google berhasil (simulasi)!");
     localStorage.setItem("role", "user");
@@ -70,15 +83,6 @@ export default function Login() {
 
       {/* Card Login */}
       <div className="relative bg-white/70 backdrop-blur-2xl border border-gray-200 rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.1)] p-10 w-full max-w-md transform transition-all hover:shadow-[0_10px_50px_rgba(0,0,0,0.15)] hover:scale-[1.01]">
-        
-        {/* Tombol kembali */}
-        <button
-          onClick={() => navigate("/")}
-          className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
-        >
-          <FaArrowLeft className="text-lg" />
-          <span className="text-sm font-semibold">Kembali</span>
-        </button>
 
         {/* Header */}
         <div className="flex flex-col items-center mb-8 mt-6">
@@ -107,13 +111,13 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-800 transition-transform duration-200 hover:scale-110"
-          >
-            {showPassword ? <FaEyeSlash /> : <FaEye />}
-          </button>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3.5 text-gray-500 hover:text-gray-800 transition-transform duration-200 hover:scale-110"
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
 
           <button
