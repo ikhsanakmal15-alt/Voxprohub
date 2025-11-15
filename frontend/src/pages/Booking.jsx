@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import image14 from "../assets/image14.png";
 import qrisImage from "../assets/qris.png";
+import { FaInstagram, FaFacebookF } from "react-icons/fa";
 
 const OPEN_HOUR = 8;
 const CLOSE_HOUR = 22;
@@ -176,7 +177,7 @@ export default function Booking() {
     if (PROMOS[key]) {
       setAppliedPromo({ code: key, discount: PROMOS[key] });
       setPromoCode(key);
-      showToast("success", `Promo '${key}' berhasil diterapkan (${Math.round(PROMOS[key]*100)}% off).`);
+      showToast("success", `Promo '${key}' berhasil diterapkan (${Math.round(PROMOS[key] * 100)}% off).`);
     } else {
       showToast("error", `Kode promo '${code}' tidak dikenali.`);
     }
@@ -391,7 +392,7 @@ Terima kasih 🙏
         const code = q.split(" ").pop();
         if (PROMOS[code]) {
           applyPromo(code);
-          reply = `Promo '${code}' diterapkan (${Math.round(PROMOS[code]*100)}% off).`;
+          reply = `Promo '${code}' diterapkan (${Math.round(PROMOS[code] * 100)}% off).`;
         } else {
           reply = `Kode promo '${code}' tidak ditemukan.`;
         }
@@ -399,7 +400,7 @@ Terima kasih 🙏
         // naive: expect 'cari slot kosong YYYY-MM-DD durasi N'
         const parts = q.split(" ");
         const dateCandidate = parts.find((p) => /^\d{4}-\d{2}-\d{2}$/.test(p));
-        const durCandidate = parts.find((p, i) => parts[i-1] === "durasi" || parts[i-1] === "duration");
+        const durCandidate = parts.find((p, i) => parts[i - 1] === "durasi" || parts[i - 1] === "duration");
         const durNum = durCandidate ? parseInt(durCandidate) : duration;
 
         if (!dateCandidate) {
@@ -462,7 +463,7 @@ Tanggal: ${selectedDates.length ? selectedDates.join(", ") : "-"}
 Jam: ${selectedTimes.length ? selectedTimes.join(", ") : "-"}
 Durasi: ${duration} jam
 Subtotal: ${toIDR(subtotal)}
-Diskon: ${appliedPromo ? `${appliedPromo.code} (${Math.round(appliedPromo.discount*100)}%)` : "-"}
+Diskon: ${appliedPromo ? `${appliedPromo.code} (${Math.round(appliedPromo.discount * 100)}%)` : "-"}
 Total: ${toIDR(total)}
 Status Pembayaran: ${paymentStatus}
         `;
@@ -492,17 +493,97 @@ Status Pembayaran: ${paymentStatus}
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white font-[Poppins] text-gray-800">
-      {/* NAVBAR */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scroll ? "bg-white/90 shadow-md py-2" : "bg-white py-4"}`}>
-        <div className="max-w-6xl mx-auto px-5 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <img src={image14} alt="Logo" className="w-9 h-9" />
-            <h1 className="text-xl font-bold text-[#d26b33] tracking-wide">VOXPRO HUB</h1>
+    <div className="min-h-screen bg-gray-50 font-[Poppins] text-gray-800 overflow-x-hidden transition-colors duration-500">
+
+
+
+      {/* === NAVBAR === */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scroll ? "bg-[#0d1224]/95 shadow-md backdrop-blur-md py-2" : "bg-white/90 py-4"
+          } border-b ${scroll ? "border-[#0d1224]/40" : "border-gray-200/30"}`}
+      >
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={image14} alt="Logo" className="w-10 h-10 rounded-full drop-shadow-md object-cover" />
+            <div>
+              <h1
+                className={`font-extrabold tracking-tight text-lg md:text-xl bg-clip-text text-transparent ${scroll ? "bg-gradient-to-r from-blue-300 to-cyan-300" : "bg-gradient-to-r from-blue-600 to-cyan-400"
+                  }`}
+              >
+                VOXPRO HUB
+              </h1>
+              <p className={`text-xs -mt-0.5 ${scroll ? "text-gray-200" : "text-gray-500"}`}>
+                Creative Voxprohub • Makassar
+              </p>
+            </div>
           </div>
-          <div className="hidden md:flex gap-8 text-gray-700 font-medium">
-            {[ { name: "Beranda", path: "/" }, { name: "Booking", path: "/booking" }, { name: "Fasilitas", path: "/fasilitas" }, { name: "Kontak", path: "/kontak" } ].map((item) => (
-              <button key={item.name} onClick={() => navigate(item.path)} className="hover:text-emerald-600 transition duration-300">{item.name}</button>
+
+          {/* Desktop Menu */}
+          <div className={`hidden md:flex gap-8 items-center font-medium text-sm ${scroll ? "text-gray-200" : "text-gray-700"}`}>
+            {[
+              { name: "Beranda", path: "/" },
+              { name: "Booking", path: "/booking" },
+              { name: "Fasilitas", path: "/fasilitas" },
+              { name: "Kontak", path: "/kontak" },
+            ].map((item, i) => (
+              <button
+                key={i}
+                onClick={() => navigate(item.path)}
+                className={`relative group px-2 py-1 rounded-md transition-colors ${scroll ? "hover:text-blue-300" : "hover:text-blue-600"
+                  }`}
+              >
+                {item.name}
+                <span
+                  className={`absolute left-0 bottom-0 w-0 h-[2px] rounded transition-all duration-300 ${scroll
+                      ? "bg-gradient-to-r from-blue-300 to-cyan-300 group-hover:w-full"
+                      : "bg-gradient-to-r from-blue-500 to-cyan-400 group-hover:w-full"
+                    }`}
+                ></span>
+              </button>
+            ))}
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button className="md:hidden" onClick={() => setOpen(!open)}>
+            <svg
+              className={`w-6 h-6 transition-colors duration-500 ${scroll ? "text-white" : "text-blue-600"}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-500 ${open ? "max-h-64 py-4" : "max-h-0"} ${scroll ? "bg-[#0d1224]/95" : "bg-white/90 backdrop-blur-md"
+            }`}
+        >
+          <div className="flex flex-col items-center gap-3 font-medium text-sm">
+            {[
+              { name: "Beranda", path: "/" },
+              { name: "Booking", path: "/booking" },
+              { name: "Fasilitas", path: "/fasilitas" },
+              { name: "Kontak", path: "/kontak" },
+            ].map((item, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  navigate(item.path);
+                  setOpen(false);
+                }}
+                className={`transition-colors duration-500 ${scroll ? "text-white hover:text-blue-300" : "text-blue-600 hover:text-blue-400"}`}
+              >
+                {item.name}
+              </button>
             ))}
           </div>
         </div>
@@ -575,7 +656,7 @@ Status Pembayaran: ${paymentStatus}
           <div className="grid md:grid-cols-3 gap-2 items-center">
             <input type="text" placeholder="Kode Promo (contoh: hemat50)" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} className="border rounded-xl p-3 focus:ring-2 focus:ring-emerald-500" />
             <button onClick={() => applyPromo(promoCode)} className="bg-emerald-600 text-white py-2 rounded-xl hover:bg-emerald-700 transition">Terapkan Promo</button>
-            <button onClick={() => { setAppliedPromo(null); setPromoCode(""); showToast("info","Promo dibersihkan."); }} className="bg-gray-200 py-2 rounded-xl">Bersihkan</button>
+            <button onClick={() => { setAppliedPromo(null); setPromoCode(""); showToast("info", "Promo dibersihkan."); }} className="bg-gray-200 py-2 rounded-xl">Bersihkan</button>
           </div>
 
           {/* Ringkasan */}
@@ -586,7 +667,7 @@ Status Pembayaran: ${paymentStatus}
             <p>Jam: {selectedTimes.join(", ") || "-"}</p>
             <p>Durasi: {duration} jam</p>
             <p>Subtotal: {toIDR(subtotal)}</p>
-            <p>Diskon: {appliedPromo ? `${appliedPromo.code} (${Math.round(appliedPromo.discount*100)}%) - ${toIDR(discountAmount)}` : "-"}</p>
+            <p>Diskon: {appliedPromo ? `${appliedPromo.code} (${Math.round(appliedPromo.discount * 100)}%) - ${toIDR(discountAmount)}` : "-"}</p>
             <p className="font-semibold text-emerald-700 mt-2">Total: {toIDR(total)}</p>
             <p className="text-sm text-gray-500 mt-1">Status Pembayaran: <span className={`font-semibold ${paymentStatus === "paid" ? "text-green-600" : paymentStatus === "cancelled" ? "text-red-600" : "text-amber-600"}`}>{paymentStatus}</span></p>
           </div>
@@ -617,11 +698,6 @@ Status Pembayaran: ${paymentStatus}
           </div>
         </div>
       </div>
-
-      {/* FOOTER */}
-      <footer className="bg-white border-t border-gray-200 py-8 text-center text-sm text-gray-600">
-        <p>&copy; {new Date().getFullYear()} <span className="font-semibold text-orange-600">VoxProHub</span>. All Rights Reserved.</p>
-      </footer>
 
       {/* TOAST */}
       {toast && (
@@ -686,13 +762,86 @@ Status Pembayaran: ${paymentStatus}
             </div>
 
             <div className="mt-4 text-right">
-              <button onClick={() => { setAiLog([]); showToast("info","Riwayat AI dibersihkan."); }} className="px-3 py-2 rounded bg-gray-200 mr-2">Bersihkan Riwayat</button>
+              <button onClick={() => { setAiLog([]); showToast("info", "Riwayat AI dibersihkan."); }} className="px-3 py-2 rounded bg-gray-200 mr-2">Bersihkan Riwayat</button>
               <button onClick={() => setAiOpen(false)} className="px-4 py-2 rounded bg-emerald-600 text-white">Selesai</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* === FOOTER === */}
+      <footer className="bg-[#0d1224] text-gray-300 pt-12 pb-8 px-6 md:px-20 relative overflow-hidden">
+        {/* Top Gradient Line */}
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500"></div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
+          {/* Brand Info */}
+          <div className="col-span-2">
+            <h2 className="text-2xl font-bold text-white mb-3">Voxpro Hub</h2>
+            <p className="text-gray-400 leading-relaxed text-sm mb-4">
+              Mewujudkan ruang kerja modern yang mendukung kolaborasi, kreativitas, dan pertumbuhan digital di Makassar.
+            </p>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2">
+                <span className="text-blue-400">📍</span> Kedai Mantao Lt.2, Jl. Toddopuli Raya, Makassar
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-blue-400">📞</span> +62 813-5666-8121
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-blue-400">✉️</span> info@voxprohub.com
+              </li>
+            </ul>
+          </div>
+
+          {/* Layanan */}
+          <div>
+            <h3 className="text-white font-semibold mb-4 uppercase tracking-wider text-sm">Layanan</h3>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li>Workspace Provider</li>
+              <li>Event Space</li>
+              <li>Meeting Room</li>
+              <li>Startup Incubation</li>
+            </ul>
+          </div>
+
+          {/* Connect */}
+          <div>
+            <h3 className="text-white font-semibold mb-4 uppercase tracking-wider text-sm">Connect</h3>
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href="https://instagram.com/voxprohub"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-blue-400 transition"
+                >
+                  <FaInstagram /> Instagram
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com/voxprohub"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-blue-400 transition"
+                >
+                  <FaFacebookF /> Facebook
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Copyright */}
+        <div className="mt-10 border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
+          <p>
+            © {new Date().getFullYear()} <span className="text-white font-semibold">Voxpro Hub</span> — Crafted with voxprohub Makassar
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
+
+

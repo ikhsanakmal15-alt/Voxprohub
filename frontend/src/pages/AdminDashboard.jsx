@@ -35,6 +35,7 @@ export default function AdminDashboard() {
   const API_URL_USERS = `${API_BASE}/api/users`;
   const API_URL_LAYANAN = `${API_BASE}/api/layanan`;
   const API_URL_LAYANAN_UPLOAD = `${API_BASE}/api/layanan/upload`;
+  const API_URL_REVIEWS = `${API_BASE}/api/reviews`;
 
   // === STATE UTAMA ===
   const [bookings, setBookings] = useState([]);
@@ -67,6 +68,77 @@ export default function AdminDashboard() {
     theme_font: "Inter",
   });
 
+  // ===========================
+  // === REVIEW HANDLERS =======
+  // ===========================
+  const [reviews, setReviews] = useState([]);
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [reviewForm, setReviewForm] = useState({
+    name: "",
+    role: "",
+    rating: 5,
+    img: "",
+    comment: "",
+  });
+
+  // === PASTIKAN FETCH REVIEWS SAAT TAB LANDING AKTIF ===
+  useEffect(() => {
+    if (activeTab === "landing") {
+      fetchReviews();
+    }
+  }, [activeTab]);
+
+  // Fetch all reviews
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get(API_URL_REVIEWS);
+      setReviews(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("fetchReviews:", err);
+    }
+  };
+
+  // Edit review
+  const handleEditReview = (r) => {
+    setEditingReviewId(r.id || r._id);
+    setReviewForm({ ...r });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Save review
+  const handleSaveReview = async () => {
+    if (!editingReviewId) return;
+    try {
+      await axios.put(`${API_URL_REVIEWS}/${editingReviewId}`, reviewForm);
+      alert("✅ Review berhasil diperbarui!");
+      setEditingReviewId(null);
+      await fetchReviews();
+    } catch (err) {
+      console.error("handleSaveReview:", err);
+      alert("❌ Gagal menyimpan review.");
+    }
+  };
+
+  // Delete review
+  const handleDeleteReview = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus review ini?")) return;
+    try {
+      await axios.delete(`${API_URL_REVIEWS}/${id}`);
+      await fetchReviews();
+      alert("✅ Review dihapus!");
+    } catch (err) {
+      console.error("handleDeleteReview:", err);
+      alert("❌ Gagal menghapus review.");
+    }
+  };
+
+  // Handle form change
+  const handleChangeReviewForm = (e) => {
+    const { name, value } = e.target;
+    setReviewForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+
   // === LAYANAN ===
   const [layanan, setLayanan] = useState([]);
   const [formLayanan, setFormLayanan] = useState({
@@ -80,88 +152,88 @@ export default function AdminDashboard() {
   const [showEditLayananModal, setShowEditLayananModal] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-const colors = {
-  // === DARK THEME ===
-  dark: {
-    bgMain: "bg-gray-950", // Lebih pekat dan elegan
-    textMain: "text-gray-100", // Teks kontras tinggi
-    sidebarBg: "bg-gray-900/90 backdrop-blur-md",
-    sidebarText: "text-gray-100",
-    cardBg: "bg-gray-900/80 backdrop-blur-md shadow-lg",
-    cardBorder: "border-gray-800",
-    hoverBg: "hover:bg-gray-800/80",
-    buttonPrimary:
-      "bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg",
-    buttonDanger:
-      "bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg",
-    buttonGradient:
-      "bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:from-indigo-400 hover:to-fuchsia-400 text-white font-medium shadow-md",
-    tableHeader: "bg-gray-800 text-gray-100 font-semibold",
-    inputBg: "bg-gray-800/70 focus:bg-gray-700 focus:ring-2 focus:ring-indigo-500 transition-all",
-  },
+  const colors = {
+    // === DARK THEME ===
+    dark: {
+      bgMain: "bg-gray-950",
+      textMain: "text-gray-100",
+      sidebarBg: "bg-gray-900/90 backdrop-blur-md",
+      sidebarText: "text-gray-100",
+      cardBg: "bg-gray-900/80 backdrop-blur-md shadow-lg",
+      cardBorder: "border-gray-800",
+      hoverBg: "hover:bg-gray-800/80",
+      buttonPrimary:
+        "bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg",
+      buttonDanger:
+        "bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white shadow-lg",
+      buttonGradient:
+        "bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:from-indigo-400 hover:to-fuchsia-400 text-white font-medium shadow-md",
+      tableHeader: "bg-gray-800 text-gray-100 font-semibold",
+      inputBg: "bg-gray-800/70 focus:bg-gray-700 focus:ring-2 focus:ring-indigo-500 transition-all",
+    },
 
-  // === LIGHT THEME ===
-  light: {
-    bgMain: "bg-gray-100",
-    textMain: "text-gray-800",
-    sidebarBg: "bg-white/90 backdrop-blur-md",
-    sidebarText: "text-gray-800",
-    cardBg: "bg-white shadow-md backdrop-blur-md",
-    cardBorder: "border-gray-300",
-    hoverBg: "hover:bg-gray-200",
-    buttonPrimary:
-      "bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md",
-    buttonDanger:
-      "bg-gradient-to-r from-red-500 via-pink-500 to-rose-600 hover:from-red-600 hover:to-rose-600 text-white shadow-md",
-    buttonGradient:
-      "bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 hover:from-sky-500 hover:to-indigo-500 text-white font-medium shadow",
-    tableHeader: "bg-gray-200 text-gray-800 font-semibold",
-    inputBg: "bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-400 transition-all",
-  },
+    // === LIGHT THEME ===
+    light: {
+      bgMain: "bg-gray-100",
+      textMain: "text-gray-800",
+      sidebarBg: "bg-white/90 backdrop-blur-md",
+      sidebarText: "text-gray-800",
+      cardBg: "bg-white shadow-md backdrop-blur-md",
+      cardBorder: "border-gray-300",
+      hoverBg: "hover:bg-gray-200",
+      buttonPrimary:
+        "bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md",
+      buttonDanger:
+        "bg-gradient-to-r from-red-500 via-pink-500 to-rose-600 hover:from-red-600 hover:to-rose-600 text-white shadow-md",
+      buttonGradient:
+        "bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400 hover:from-sky-500 hover:to-indigo-500 text-white font-medium shadow",
+      tableHeader: "bg-gray-200 text-gray-800 font-semibold",
+      inputBg: "bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-400 transition-all",
+    },
 
-  // === ORANGE / DEFAULT THEME ===
-  orange: {
-    bgMain: "bg-gradient-to-br from-white via-orange-50 to-orange-100",
-    textMain: "text-gray-800",
-    sidebarBg: "bg-gradient-to-b from-white via-orange-50 to-orange-100 backdrop-blur-md",
-    sidebarText: "text-gray-800",
-    cardBg: "bg-white/90 backdrop-blur-md shadow-md",
-    cardBorder: "border-orange-200",
-    hoverBg: "hover:bg-orange-100/70",
-    buttonPrimary:
-      "bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 hover:from-orange-500 hover:to-amber-500 text-white shadow-md",
-    buttonDanger:
-      "bg-gradient-to-r from-red-400 via-red-500 to-rose-500 hover:from-red-500 hover:to-rose-600 text-white shadow-md",
-    buttonGradient:
-      "bg-gradient-to-r from-orange-300 via-amber-300 to-yellow-200 hover:from-orange-400 hover:to-amber-400 text-gray-900 font-semibold shadow",
-    tableHeader: "bg-orange-100 text-gray-800 font-semibold",
-    inputBg: "bg-orange-50 focus:bg-white focus:ring-2 focus:ring-orange-300 transition-all",
-  },
-};
+    // === ORANGE / DEFAULT THEME ===
+    orange: {
+      bgMain: "bg-gradient-to-br from-white via-orange-50 to-orange-100",
+      textMain: "text-gray-800",
+      sidebarBg: "bg-gradient-to-b from-white via-orange-50 to-orange-100 backdrop-blur-md",
+      sidebarText: "text-gray-800",
+      cardBg: "bg-white/90 backdrop-blur-md shadow-md",
+      cardBorder: "border-orange-200",
+      hoverBg: "hover:bg-orange-100/70",
+      buttonPrimary:
+        "bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 hover:from-orange-500 hover:to-amber-500 text-white shadow-md",
+      buttonDanger:
+        "bg-gradient-to-r from-red-400 via-red-500 to-rose-500 hover:from-red-500 hover:to-rose-600 text-white shadow-md",
+      buttonGradient:
+        "bg-gradient-to-r from-orange-300 via-amber-300 to-yellow-200 hover:from-orange-400 hover:to-amber-400 text-gray-900 font-semibold shadow",
+      tableHeader: "bg-orange-100 text-gray-800 font-semibold",
+      inputBg: "bg-orange-50 focus:bg-white focus:ring-2 focus:ring-orange-300 transition-all",
+    },
+  };
 
-const currentColor = colors[themeSettings.theme_color] || colors.orange;
+  const currentColor = colors[themeSettings.theme_color] || colors.orange;
 
 
 
-// === THEME LOCALSTORAGE ===
-useEffect(() => {
-  const storedTheme = localStorage.getItem("themeSettings");
-  if (storedTheme) {
-    try {
-      setThemeSettings(JSON.parse(storedTheme));
-    } catch {
-      // Jika parsing gagal, gunakan fallback ke dark
+  // === THEME LOCALSTORAGE ===
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("themeSettings");
+    if (storedTheme) {
+      try {
+        setThemeSettings(JSON.parse(storedTheme));
+      } catch {
+        // Jika parsing gagal, gunakan fallback ke dark
+        setThemeSettings({ theme_color: "dark", theme_font: "Inter" });
+      }
+    } else {
+      // Jika belum ada data tersimpan, set default dark mode
       setThemeSettings({ theme_color: "dark", theme_font: "Inter" });
     }
-  } else {
-    // Jika belum ada data tersimpan, set default dark mode
-    setThemeSettings({ theme_color: "dark", theme_font: "Inter" });
-  }
-}, []);
+  }, []);
 
-useEffect(() => {
-  localStorage.setItem("themeSettings", JSON.stringify(themeSettings));
-}, [themeSettings]);
+  useEffect(() => {
+    localStorage.setItem("themeSettings", JSON.stringify(themeSettings));
+  }, [themeSettings]);
 
 
   // === FETCH DATA WHEN TAB CHANGES ===
@@ -237,9 +309,15 @@ useEffect(() => {
   const fetchLayanan = async () => {
     try {
       const res = await axios.get(API_URL_LAYANAN);
-      setLayanan(Array.isArray(res.data) ? res.data : []);
+      setLayanan(
+        (res.data || []).map((l) => ({
+          ...l,
+          imageFullUrl: l.image ? `http://localhost:5000/uploads/${l.image}` : null
+        }))
+      );
     } catch (err) {
       console.error("fetchLayanan:", err);
+      alert("❌ Gagal mengambil data layanan.");
     }
   };
 
@@ -281,7 +359,7 @@ useEffect(() => {
   // ===========================
   // === BOOKING HANDLERS =====
   // ===========================
-    const handleChangeBooking = (e) => {
+  const handleChangeBooking = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -372,29 +450,100 @@ useEffect(() => {
     }
   };
 
-  // ===========================
-  // === LAYANAN (CRUD) =======
-  // ===========================
-  const handleChangeLayanan = (e) => {
-    const { name, value } = e.target;
-    setFormLayanan((prev) => ({ ...prev, [name]: value }));
-  };
 
+// ===========================
+// === HANDLE CHANGE FORM ====
+// ===========================
+const handleChangeLayanan = (e) => {
+  const { name, value } = e.target;
+  setFormLayanan((prev) => ({ ...prev, [name]: value }));
+};
+
+// ===========================
+// === HANDLE FILE UPLOAD ====
+// ===========================
+const handleFileChangeForLayanan = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Simpan file di state, buat preview sementara
+  const localPreview = URL.createObjectURL(file);
+  setFormLayanan((prev) => ({ ...prev, file, image: localPreview }));
+
+  setUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await axios.post(API_URL_LAYANAN_UPLOAD, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    // Backend harus mengembalikan { image: "nama_file.jpg" } atau URL lengkap
+    const uploadedUrl = res.data.image || res.data.imageUrl;
+    if (uploadedUrl) {
+      // Jika backend hanya mengirim nama file, tambahkan prefix URL uploads
+      const fullUrl = uploadedUrl.startsWith("http")
+        ? uploadedUrl
+        : `http://localhost:5000/uploads/${uploadedUrl}`;
+
+      setFormLayanan((prev) => ({
+        ...prev,
+        image: fullUrl, // ganti preview lokal dengan URL server
+        file: null,     // reset file
+      }));
+    } else {
+      alert("❌ Upload gagal, tidak ada URL yang diterima.");
+      setFormLayanan((prev) => ({ ...prev, image: "", file: null }));
+    }
+  } catch (err) {
+    console.error("Upload error:", err);
+    alert("❌ Gagal upload gambar.");
+    setFormLayanan((prev) => ({ ...prev, image: "", file: null }));
+  } finally {
+    setUploading(false);
+  }
+};
+
+
+  // ===========================
+  // === HANDLE SUBMIT ========
+  // ===========================
   const handleSubmitLayanan = async (e) => {
     e.preventDefault();
     if (!formLayanan.title || !formLayanan.description) {
       alert("Judul dan deskripsi wajib diisi!");
       return;
     }
+
+    // Jangan submit jika file sedang diupload
+    if (uploading) {
+      alert("❌ Tunggu proses upload selesai!");
+      return;
+    }
+
+    // Validasi image: harus URL backend atau kosong
+    const imageUrl = formLayanan.image && formLayanan.image.startsWith("http")
+      ? formLayanan.image
+      : null;
+
     try {
+      const payload = {
+        title: formLayanan.title,
+        description: formLayanan.description,
+        image: imageUrl,
+      };
+
       if (editLayananMode && (formLayanan.id || formLayanan._id)) {
         const id = formLayanan.id || formLayanan._id;
-        await axios.put(`${API_URL_LAYANAN}/${id}`, formLayanan);
+        await axios.put(`${API_URL_LAYANAN}/${id}`, payload);
         alert("✅ Layanan berhasil diperbarui!");
       } else {
-        await axios.post(API_URL_LAYANAN, formLayanan);
+        await axios.post(API_URL_LAYANAN, payload);
         alert("✅ Layanan berhasil ditambahkan!");
       }
+
+      // Reset form
       setFormLayanan({ id: null, title: "", description: "", image: "" });
       setEditLayananMode(false);
       await fetchLayanan();
@@ -404,16 +553,17 @@ useEffect(() => {
     }
   };
 
+  // ===========================
+  // === EDIT / DELETE ========
+  // ===========================
   const handleEditLayanan = (item) => {
     setFormLayanan({
-      id: item.id || item._id || null,
-      title: item.title || "",
-      description: item.description || "",
-      image: item.image || item.imageUrl || "",
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      image: item.imageUrl || item.image || "", // HARUS URL backend
     });
     setEditLayananMode(true);
-    setActiveTab("layanan");
-    setShowEditLayananModal(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -429,43 +579,14 @@ useEffect(() => {
     }
   };
 
-  // ===========================
-  // === IMAGE UPLOAD ========
-  // ===========================
-  const handleUploadImageFile = async (file) => {
-    if (!file) return null;
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("image", file);
-      const res = await axios.post(API_URL_LAYANAN_UPLOAD, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      setUploading(false);
-      // expect backend returns { imageUrl: "https://..." } OR { url: "..." }
-      return res.data.imageUrl || res.data.url || res.data.path || null;
-    } catch (err) {
-      console.error("handleUploadImageFile:", err);
-      setUploading(false);
-      alert("❌ Gagal upload gambar. Periksa endpoint upload backend.");
-      return null;
-    }
-  };
-
-  // file input handler helper for layanan
-  const handleFileChangeForLayanan = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const uploadedUrl = await handleUploadImageFile(file);
-    if (uploadedUrl) setFormLayanan((prev) => ({ ...prev, image: uploadedUrl }));
-  };
 
   // ===========================
-  // === IMAGE PREVIEW ========
+  // === IMAGE PREVIEW MODAL ===
   // ===========================
   const openImagePreview = (item) => {
-    setSelectedImage(item);
+    setSelectedImage(item); // simpan object lengkap
   };
+
   const closeImagePreview = () => setSelectedImage(null);
 
   // ===========================
@@ -504,16 +625,14 @@ useEffect(() => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group ${
-                  activeTab === tab.id
-                    ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-white shadow-lg scale-[1.02]"
-                    : `${currentColor.hoverBg} hover:translate-x-1`
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group ${activeTab === tab.id
+                  ? "bg-gradient-to-r from-orange-500 to-yellow-400 text-white shadow-lg scale-[1.02]"
+                  : `${currentColor.hoverBg} hover:translate-x-1`
+                  }`}
               >
                 <span
-                  className={`text-lg ${
-                    activeTab === tab.id ? "scale-110" : "group-hover:scale-110 text-orange-400"
-                  }`}
+                  className={`text-lg ${activeTab === tab.id ? "scale-110" : "group-hover:scale-110 text-orange-400"
+                    }`}
                 >
                   {tab.icon}
                 </span>
@@ -630,91 +749,118 @@ useEffect(() => {
           </div>
         )}
 
-        {/* === TAB LAYANAN === */}
-        {activeTab === "layanan" && (
-          <div className={`${currentColor.cardBg} p-6 rounded-2xl shadow-xl border ${currentColor.cardBorder}`}>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <FaImage className="text-orange-500" /> Kelola Layanan
-            </h2>
+{/* === TAB LAYANAN === */}
+{activeTab === "layanan" && (
+  <div className={`${currentColor.cardBg} p-6 rounded-2xl shadow-xl border ${currentColor.cardBorder}`}>
+    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+      <FaImage className="text-orange-500" /> Kelola Layanan
+    </h2>
 
-        {/* Form Layanan (URL atau upload) */}
-        <form onSubmit={handleSubmitLayanan} className="grid md:grid-cols-3 gap-3 mb-6">
-        <input
-          type="text"
-          name="title"
-          value={formLayanan.title}
-          onChange={handleChangeLayanan}
-          placeholder="Judul layanan"
-          className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
-        />
+    {/* Form Layanan */}
+    <form onSubmit={handleSubmitLayanan} className="grid md:grid-cols-3 gap-3 mb-6">
+      <input
+        type="text"
+        name="title"
+        value={formLayanan.title}
+        onChange={handleChangeLayanan}
+        placeholder="Judul layanan"
+        className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+      />
 
-        <input
-          type="text"
-          name="description"
-          value={formLayanan.description}
-          onChange={handleChangeLayanan}
-          placeholder="Deskripsi"
-          className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
-        />
+      <input
+        type="text"
+        name="description"
+        value={formLayanan.description}
+        onChange={handleChangeLayanan}
+        placeholder="Deskripsi"
+        className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+      />
 
-        <input
-          type="text"
-          name="image"
-          value={formLayanan.image}
-          onChange={handleChangeLayanan}
-          placeholder="URL Gambar (atau kosong jika upload file)"
-          className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
-        />
+      <input
+        type="text"
+        name="image"
+        value={formLayanan.image}
+        onChange={handleChangeLayanan}
+        placeholder="URL Gambar (atau kosong jika upload file)"
+        className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
+      />
 
-        {/* File upload */}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChangeForLayanan}
-          className={`col-span-3 ${currentColor.textMain}`}
-        />
+      {/* File Upload */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChangeForLayanan}
+        className={`col-span-3 ${currentColor.textMain}`}
+      />
 
-        <button
-          type="submit"
-          className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition col-span-3`}
-        >
-          {editLayananMode ? "Simpan Perubahan" : "Tambah Layanan"}
-        </button>
-        </form>
+      {/* Preview Gambar */}
+      {(formLayanan.file || formLayanan.image) && (
+        <div className="col-span-3 flex justify-center mb-2">
+          <img
+            src={
+              formLayanan.file
+                ? URL.createObjectURL(formLayanan.file)
+                : formLayanan.image
+            }
+            alt="Preview Layanan"
+            className="w-48 h-32 object-cover rounded border"
+          />
+        </div>
+      )}
 
+      <button
+        type="submit"
+        disabled={uploading}
+        className={`${currentColor.buttonGradient} text-white px-4 py-2 rounded-lg text-sm hover:shadow-lg transition col-span-3`}
+      >
+        {editLayananMode ? "Simpan Perubahan" : "Tambah Layanan"}
+      </button>
+    </form>
 
-            {/* Grid Layanan */}
-            {layanan.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">Belum ada data layanan.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {layanan.map((l, i) => {
-                  const id = l.id || l._id || i;
-                  return (
-                    <div key={id} className={`p-4 border ${currentColor.cardBorder} ${currentColor.cardBg} rounded-xl shadow-md`}>
-                      <img
-                        src={l.image || l.imageUrl || "https://via.placeholder.com/300"}
-                        alt={l.title}
-                        className="w-full h-40 object-cover rounded mb-3 cursor-pointer"
-                        onClick={() => openImagePreview(l)}
-                      />
-                      <h3 className="font-semibold text-lg">{l.title}</h3>
-                      <p className="text-sm mb-3">{l.description}</p>
-                      <div className="flex justify-between">
-                        <button onClick={() => handleEditLayanan(l)} className={`${currentColor.buttonPrimary} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}>
-                          <FaEdit /> Edit
-                        </button>
-                        <button onClick={() => handleDeleteLayanan(id)} className={`${currentColor.buttonDanger} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}>
-                          <FaTrash /> Hapus
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+    {/* Grid Layanan */}
+    {layanan.length === 0 ? (
+      <p className="text-center text-gray-500 py-4">Belum ada data layanan.</p>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {layanan.map((l, i) => {
+          const id = l.id || l._id || i;
+          const imageSrc = l.image
+            ? `http://localhost:5000/uploads/${l.image}`
+            : "https://via.placeholder.com/300";
+
+          return (
+            <div
+              key={id}
+              className={`p-4 border ${currentColor.cardBorder} ${currentColor.cardBg} rounded-xl shadow-md`}
+            >
+              <img
+                src={imageSrc}
+                alt={l.title}
+                className="w-full h-40 object-cover rounded mb-3"
+              />
+              <h3 className="font-semibold text-lg">{l.title}</h3>
+              <p className="text-sm mb-3">{l.description}</p>
+              <div className="flex justify-between">
+                <button
+                  onClick={() => handleEditLayanan(l)}
+                  className={`${currentColor.buttonPrimary} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}
+                >
+                  <FaEdit /> Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteLayanan(id)}
+                  className={`${currentColor.buttonDanger} text-white px-3 py-1 rounded text-xs flex items-center gap-1`}
+                >
+                  <FaTrash /> Hapus
+                </button>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+)}
 
         {/* === TAB SETTINGS === */}
         {activeTab === "settings" && (
@@ -730,7 +876,7 @@ useEffect(() => {
               }
               className="w-full border border-gray-300 rounded-lg p-2 mb-4"
             >
-              <option value="orange">🟠 Orange (Default)</option>
+              <option value="orange">🟠 Orange</option>
               <option value="light">🌤️ Terang</option>
               <option value="dark">🌙 Gelap</option>
             </select>
@@ -771,8 +917,8 @@ useEffect(() => {
                   themeSettings.theme_color === "dark"
                     ? "text-indigo-400"
                     : themeSettings.theme_color === "light"
-                    ? "text-blue-500"
-                    : "text-orange-500"
+                      ? "text-blue-500"
+                      : "text-orange-500"
                 } />
                 {editMode ? "Edit Booking" : "Tambah Booking"}
               </h2>
@@ -789,8 +935,8 @@ useEffect(() => {
                       f === "nama"
                         ? "Nama Customer"
                         : f === "telepon"
-                        ? "Nomor Telepon"
-                        : "Detail Pesanan"
+                          ? "Nomor Telepon"
+                          : "Detail Pesanan"
                     }
                     className={`${currentColor.inputBg} ${currentColor.textMain} border ${currentColor.cardBorder} rounded-lg px-3 py-2 focus:outline-none focus:ring-2 transition-all duration-300`}
                   />
@@ -916,9 +1062,11 @@ useEffect(() => {
 
         {/* === TAB LANDING PAGE === */}
         {activeTab === "landing" && (
-          <div>
-            <table className="w-full text-left border-collapse border border-orange-100 rounded-lg overflow-hidden shadow-sm">
-              <thead className="bg-white-50">
+          <div className="space-y-8">
+
+            {/* === TABEL KONTEN LANDING === */}
+            <table className="w-full text-left border-collapse border border-gray-300 rounded-lg overflow-hidden">
+              <thead className={`${currentColor.tableHeader}`}>
                 <tr>
                   <th className="p-2 border">Section</th>
                   <th className="p-2 border">Title</th>
@@ -942,8 +1090,6 @@ useEffect(() => {
                           >
                             <FaEdit /> Edit
                           </button>
-
-                          {/* Jika ada gambar di konten landing, tombol lihat gambar */}
                           {c.image && (
                             <button
                               onClick={() => openImagePreview(c)}
@@ -960,108 +1106,177 @@ useEffect(() => {
               </tbody>
             </table>
 
+            {/* === REVIEW & RATING ADMIN === */}
+            <div className={`${currentColor.cardBg} p-6 rounded-2xl shadow-xl border ${currentColor.cardBorder}`}>
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <FaUsers className="text-orange-500" /> Kelola Review Landing Page
+              </h2>
+
+              <table className="w-full text-left border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                <thead className={`${currentColor.tableHeader}`}>
+                  <tr>
+                    <th className="p-2 border">No</th>
+                    <th className="p-2 border">Nama</th>
+                    <th className="p-2 border">Role</th>
+                    <th className="p-2 border">Rating</th>
+                    <th className="p-2 border">Komentar</th>
+                    <th className="p-2 border">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reviews.map((r, i) => {
+                    const id = r.id || r._id;
+                    const isEditing = editingReviewId === id;
+
+                    return (
+                      <tr key={id}>
+                        <td className="border p-2">{i + 1}</td>
+
+                        <td className="border p-2">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              name="name"
+                              value={reviewForm.name}
+                              onChange={handleChangeReviewForm}
+                              className={`${currentColor.inputBg} border ${currentColor.cardBorder} rounded px-2 py-1`}
+                            />
+                          ) : (
+                            r.name
+                          )}
+                        </td>
+
+                        <td className="border p-2">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              name="role"
+                              value={reviewForm.role}
+                              onChange={handleChangeReviewForm}
+                              className={`${currentColor.inputBg} border ${currentColor.cardBorder} rounded px-2 py-1`}
+                            />
+                          ) : (
+                            r.role
+                          )}
+                        </td>
+
+                        <td className="border p-2">
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              name="rating"
+                              min="1"
+                              max="5"
+                              value={reviewForm.rating}
+                              onChange={handleChangeReviewForm}
+                              className={`${currentColor.inputBg} border ${currentColor.cardBorder} rounded px-2 py-1 w-16`}
+                            />
+                          ) : (
+                            r.rating
+                          )}
+                        </td>
+
+                        <td className="border p-2">
+                          {isEditing ? (
+                            <textarea
+                              name="comment"
+                              value={reviewForm.comment}
+                              onChange={handleChangeReviewForm}
+                              className={`${currentColor.inputBg} border ${currentColor.cardBorder} rounded px-2 py-1 w-full`}
+                            />
+                          ) : (
+                            r.comment
+                          )}
+                        </td>
+
+                        <td className="border p-2 flex gap-2">
+                          {isEditing ? (
+                            <button
+                              onClick={handleSaveReview}
+                              className={`${currentColor.buttonPrimary} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
+                            >
+                              <FaSave /> Simpan
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEditReview(r)}
+                              className="bg-orange-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-orange-600"
+                            >
+                              <FaEdit /> Edit
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleDeleteReview(id)}
+                            className={`${currentColor.buttonDanger} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
+                          >
+                            <FaTrash /> Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* === FORM EDIT LANDING === */}
             {editing && (
-              <div
-                className={`mt-6 p-4 rounded-xl shadow-inner ${
-                  themeSettings.theme_color === "dark"
-                    ? "bg-gray-800 border border-gray-700"
-                    : "bg-orange-50 border border-orange-100"
-                }`}
-              >
+              <div className={`mt-6 p-4 rounded-xl shadow-inner ${themeSettings.theme_color === "dark" ? "bg-gray-800 border border-gray-700" : "bg-orange-50 border border-orange-100"}`}>
                 <h3 className="font-semibold mb-2 capitalize">Edit {editing}</h3>
 
-                {/* === Input Title === */}
                 <input
                   type="text"
                   value={landingForm.title || ""}
-                  onChange={(e) =>
-                    setLandingForm({ ...landingForm, title: e.target.value })
-                  }
+                  onChange={(e) => setLandingForm({ ...landingForm, title: e.target.value })}
                   placeholder="Title"
-                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
-                    themeSettings.theme_color === "dark"
-                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
-                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
-                  }`}
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${themeSettings.theme_color === "dark" ? "bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500" : "bg-white text-gray-800 border-orange-200 focus:ring-2 focus:ring-orange-300"}`}
                 />
 
-                {/* === Input Subtitle === */}
                 <textarea
                   value={landingForm.subtitle || ""}
-                  onChange={(e) =>
-                    setLandingForm({ ...landingForm, subtitle: e.target.value })
-                  }
+                  onChange={(e) => setLandingForm({ ...landingForm, subtitle: e.target.value })}
                   placeholder="Subtitle"
                   rows="3"
-                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
-                    themeSettings.theme_color === "dark"
-                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
-                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
-                  }`}
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${themeSettings.theme_color === "dark" ? "bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500" : "bg-white text-gray-800 border-orange-200 focus:ring-2 focus:ring-orange-300"}`}
                 />
 
-                {/* === Input URL Gambar === */}
                 <input
                   type="text"
                   value={landingForm.image || ""}
-                  onChange={(e) =>
-                    setLandingForm({ ...landingForm, image: e.target.value })
-                  }
+                  onChange={(e) => setLandingForm({ ...landingForm, image: e.target.value })}
                   placeholder="URL Gambar"
-                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
-                    themeSettings.theme_color === "dark"
-                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
-                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
-                  }`}
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${themeSettings.theme_color === "dark" ? "bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500" : "bg-white text-gray-800 border-orange-200 focus:ring-2 focus:ring-orange-300"}`}
                 />
 
-                {/* === Upload File === */}
                 <input
                   type="file"
                   accept="image/*"
                   onChange={async (e) => {
-                    const file = e.target.files && e.target.files[0];
+                    const file = e.target.files?.[0];
                     if (!file) return;
                     const uploadedUrl = await handleUploadImageFile(file);
-                    if (uploadedUrl)
-                      setLandingForm({ ...landingForm, image: uploadedUrl });
+                    if (uploadedUrl) setLandingForm({ ...landingForm, image: uploadedUrl });
                   }}
-                  className={`w-full mb-2 ${
-                    themeSettings.theme_color === "dark"
-                      ? "text-gray-200"
-                      : "text-gray-700"
-                  }`}
+                  className={`w-full mb-2 ${themeSettings.theme_color === "dark" ? "text-gray-200" : "text-gray-700"}`}
                 />
 
-                {/* === Input Teks Tombol === */}
                 <input
                   type="text"
                   value={landingForm.button_text || ""}
-                  onChange={(e) =>
-                    setLandingForm({ ...landingForm, button_text: e.target.value })
-                  }
+                  onChange={(e) => setLandingForm({ ...landingForm, button_text: e.target.value })}
                   placeholder="Teks Tombol"
-                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${
-                    themeSettings.theme_color === "dark"
-                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
-                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
-                  }`}
+                  className={`w-full mb-2 p-2 rounded-lg border transition-all duration-300 ${themeSettings.theme_color === "dark" ? "bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500" : "bg-white text-gray-800 border-orange-200 focus:ring-2 focus:ring-orange-300"}`}
                 />
 
-                {/* === Input Link Tombol === */}
                 <input
                   type="text"
                   value={landingForm.button_link || ""}
-                  onChange={(e) =>
-                    setLandingForm({ ...landingForm, button_link: e.target.value })
-                  }
+                  onChange={(e) => setLandingForm({ ...landingForm, button_link: e.target.value })}
                   placeholder="Link Tombol"
-                  className={`w-full mb-4 p-2 rounded-lg border transition-all duration-300 ${
-                    themeSettings.theme_color === "dark"
-                      ? "bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-indigo-500"
-                      : "bg-white text-gray-800 placeholder-gray-500 border-orange-200 focus:ring-2 focus:ring-orange-300"
-                  }`}
+                  className={`w-full mb-4 p-2 rounded-lg border transition-all duration-300 ${themeSettings.theme_color === "dark" ? "bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-indigo-500" : "bg-white text-gray-800 border-orange-200 focus:ring-2 focus:ring-orange-300"}`}
                 />
+
                 <button
                   onClick={handleSaveLanding}
                   className="bg-gradient-to-r from-orange-500 to-yellow-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:shadow-lg transition"

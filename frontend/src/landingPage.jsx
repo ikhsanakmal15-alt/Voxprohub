@@ -3,30 +3,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaWhatsapp, FaStar } from "react-icons/fa";
 
-// === ASSETS ===
+// === ASET ===
 import image13 from "./assets/image13.png";
 import image14 from "./assets/image14.png";
 import fasilitas1 from "./assets/fasilitas1.png";
 import fasilitas2 from "./assets/fasilitas2.png";
 import fasilitas3 from "./assets/fasilitas3.png";
-import kontak1 from "./assets/kontak1.png";
-import SHAPEGradasi from "./assets/shape-gradasi.png";
 
-/**
- * NOTE:
- * - Aku mempertahankan semua fungsi & data fetching yang sudah ada.
- * - Menghilangkan bagian yang kamu minta: "WHO WE ARE", statistik (850+, 99.2%, 12+)
- *   dan juga floating stat cards (🏆 95% Client Retention, 3.2x ROI).
- * - Styling ditingkatkan: palet biru-putih konsisten, shadow lembut, glassmorphism,
- *   transisi halus, dan typographic hierarchy.
- *
- * Pastikan Tailwind CSS sudah dikonfigurasi di proyekmu. Jika ingin font khusus
- * (Poppins, Inter) pastikan ditambahkan di index.html atau di config Tailwind.
- */
-
-// === Lazy Load Image Component ===
 const LazyImage = ({ src, alt, className }) => (
   <img loading="lazy" src={src} alt={alt} className={className} />
 );
@@ -42,31 +27,21 @@ export default function LandingPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoSlide, setAutoSlide] = useState(true);
   const [showTopBtn, setShowTopBtn] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   const berandaRef = useRef(null);
   const fasilitasRef = useRef(null);
   const lokasiRef = useRef(null);
   const kontakRef = useRef(null);
+  const reviewsRef = useRef(null);
 
   const fasilitasData = [
-    {
-      img: fasilitas1,
-      title: "Studio",
-      desc: "Cocok untuk podcast, video, atau live streaming profesional.",
-    },
-    {
-      img: fasilitas2,
-      title: "Medium Room",
-      desc: "Ideal untuk meeting skala kecil dengan fasilitas lengkap.",
-    },
-    {
-      img: fasilitas3,
-      title: "Small Room",
-      desc: "Nyaman untuk rapat privat atau kerja mandiri.",
-    },
+    { img: fasilitas1, title: "Podcast Room", desc: "Cocok untuk podcast, video, atau live streaming profesional kapasitas 2-3 orang." },
+    { img: fasilitas2, title: "Meeting Room", desc: "Ideal untuk meeting skala kecil dengan fasilitas lengkap kapasitas 6-10 orang." },
+    { img: fasilitas3, title: "Small Room", desc: "Nyaman untuk rapat privat atau kerja mandiri kapasitas 2-3 orang." },
   ];
 
-  // Scroll Effect
+  // Scroll
   useEffect(() => {
     const handleScroll = () => {
       setScroll(window.scrollY > 20);
@@ -76,22 +51,31 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fetch Data from API
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/landing")
-      .then((res) => {
-        const data = res.data;
+    const fetchData = async () => {
+      try {
+        // Ambil konten landing page
+        const landingRes = await axios.get("http://localhost:5000/api/landing");
+        const data = landingRes.data;
         setHero(data.find((i) => i.section === "hero") || {});
         setVisi(data.find((i) => i.section === "visi") || {});
         setFasilitas(data.find((i) => i.section === "fasilitas") || {});
         setLokasi(data.find((i) => i.section === "lokasi") || {});
         setKontak(data.find((i) => i.section === "kontak") || {});
-      })
-      .catch((err) => console.error("Gagal memuat konten:", err));
+
+        // Ambil review
+        const reviewsRes = await axios.get("http://localhost:5000/api/reviews");
+        setReviews(reviewsRes.data);
+      } catch (err) {
+        console.error("Gagal memuat data:", err);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  // Auto Slide Fasilitas
+
+  // Auto Slide
   useEffect(() => {
     if (!autoSlide) return;
     const interval = setInterval(() => {
@@ -107,18 +91,19 @@ export default function LandingPage() {
 
   const handleCardClick = (index) => setCurrentIndex(index);
 
+  // WhatsApp settings
+  const WHATSAPP_NUMBER = "6285242008058";
+  const WHATSAPP_TEXT = "Halo, saya mau menanyakan tentang layanan dan reservasi.";
+
   return (
     <div className="min-h-screen overflow-x-hidden transition-colors duration-500 bg-white text-gray-800 font-[Poppins,Inter,sans-serif]">
       {/* === NAVBAR === */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scroll
-            ? "bg-white/80 shadow-md backdrop-blur-md py-2"
-            : "bg-white/60 backdrop-blur-sm py-3"
-        } border-b border-white/30`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scroll ? "bg-[#0d1224]/95 shadow-md backdrop-blur-md py-2" : "bg-white/95 py-3"
+          } border-b ${scroll ? "border-[#0d1224]/40" : "border-gray-200/30"}`}
       >
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          {/* === Logo === */}
+          {/* Logo */}
           <div className="flex items-center gap-3">
             <img
               src={image14}
@@ -126,83 +111,91 @@ export default function LandingPage() {
               className="w-10 h-10 rounded-full drop-shadow-md object-cover"
             />
             <div>
-              <h1 className="font-extrabold tracking-tight text-lg md:text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-400">
+              <h1
+                className={`font-extrabold tracking-tight text-lg md:text-xl bg-clip-text text-transparent ${scroll
+                  ? "bg-gradient-to-r from-blue-300 to-cyan-300"
+                  : "bg-gradient-to-r from-blue-600 to-cyan-400"
+                  }`}
+              >
                 VOXPRO HUB
               </h1>
-              <p className="text-xs text-gray-500 -mt-0.5">Creative Voxprohub • Makassar</p>
+              <p className={`text-xs -mt-0.5 ${scroll ? "text-gray-200" : "text-gray-500"}`}>
+                Creative Voxprohub • Makassar
+              </p>
             </div>
           </div>
 
           {/* === Desktop Menu === */}
-          <div className="hidden md:flex gap-8 items-center font-medium text-gray-700">
-            {["Beranda", "Fasilitas", "Lokasi", "Kontak"].map((menu, i) => (
+          <div
+            className={`hidden md:flex gap-8 items-center font-medium text-sm ${scroll ? "text-gray-200" : "text-gray-700"
+              }`}
+          >
+            {["Beranda", "Fasilitas", "Review", "Lokasi", "Kontak"].map((menu, i) => (
               <button
                 key={i}
                 onClick={() =>
-                  scrollToSection([berandaRef, fasilitasRef, lokasiRef, kontakRef][i])
+                  scrollToSection(
+                    [berandaRef, fasilitasRef, reviewsRef, lokasiRef, kontakRef][i]
+                  )
                 }
-                className="relative group text-sm md:text-base px-2 py-1 rounded-md hover:text-blue-600 transition-colors"
+                className={`relative group px-2 py-1 rounded-md transition-colors ${scroll ? "hover:text-blue-300" : "hover:text-blue-600"
+                  }`}
               >
                 {menu}
-                <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-300 group-hover:w-full rounded"></span>
+                <span
+                  className={`absolute left-0 bottom-0 w-0 h-[2px] rounded transition-all duration-300 ${scroll
+                    ? "bg-gradient-to-r from-blue-300 to-cyan-300 group-hover:w-full"
+                    : "bg-gradient-to-r from-blue-500 to-cyan-400 group-hover:w-full"
+                    }`}
+                ></span>
               </button>
             ))}
+
+
+
+            {/* Tombol */}
             <div className="flex gap-3 ml-6">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 shadow-sm transition-all duration-300"
+                className={`px-4 py-2 text-sm rounded-full border transition-all duration-300 ${scroll ? "border-blue-300 text-blue-200 hover:bg-blue-800/30" : "border-blue-200 text-blue-600 hover:bg-blue-50"
+                  }`}
               >
                 Masuk
               </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 text-sm rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:scale-[1.01] transition-transform duration-200"
+                className={`px-4 py-2 text-sm rounded-full shadow-md transition-transform duration-200 ${scroll ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:scale-[1.01]" : "bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:scale-[1.01]"
+                  }`}
               >
                 Daftar
               </Link>
             </div>
           </div>
 
-          {/* === Mobile Button === */}
-          <div className="flex items-center gap-3">
+          {/* Mobile Hamburger */}
+          <div className="flex items-center gap-3 md:hidden">
             <button
-              className="md:hidden text-blue-600 transition-transform duration-300 hover:scale-110"
+              className={`transition-transform duration-300 hover:scale-110 ${scroll ? "text-blue-200" : "text-blue-600"}`}
               onClick={() => setOpen(!open)}
               aria-label="Open menu"
             >
-              <svg
-                className="w-7 h-7"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={
-                    open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"
-                  }
-                />
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
               </svg>
             </button>
           </div>
         </div>
 
-        {/* === Mobile Menu === */}
-        <div
-          className={`md:hidden bg-white/95 backdrop-blur-md overflow-hidden transition-all duration-500 ${
-            open ? "max-h-80 py-4 shadow-lg" : "max-h-0"
-          }`}
-        >
-          <div className="flex flex-col items-center gap-4 text-gray-700 font-medium text-sm">
-            {["Beranda", "Fasilitas", "Lokasi", "Kontak"].map((menu, i) => (
+        {/* Mobile Menu */}
+        <div className={`md:hidden overflow-hidden transition-all duration-500 ${open ? "max-h-80 py-4" : "max-h-0"} ${scroll ? "bg-[#0d1224]/95" : "bg-white/95"} backdrop-blur-md`}>
+          <div className={`flex flex-col items-center gap-4 font-medium text-sm ${scroll ? "text-gray-200" : "text-gray-700"}`}>
+            {["Beranda", "Fasilitas", "Review", "Lokasi", "Kontak"].map((menu, i) => (
               <button
                 key={i}
                 onClick={() =>
-                  scrollToSection([berandaRef, fasilitasRef, lokasiRef, kontakRef][i])
+                  scrollToSection([berandaRef, fasilitasRef, reviewsRef, lokasiRef, kontakRef][i])
                 }
-                className="w-full text-left px-6 py-2 hover:text-blue-600 transition"
+                className={`w-full text-left px-6 py-2 transition-colors ${scroll ? "hover:text-blue-300" : "hover:text-blue-600"}`}
               >
                 {menu}
               </button>
@@ -210,13 +203,13 @@ export default function LandingPage() {
             <div className="flex gap-3 mt-2">
               <Link
                 to="/login"
-                className="px-5 py-1.5 border border-blue-200 text-blue-600 rounded-full hover:bg-blue-50 transition"
+                className={`px-5 py-1.5 rounded-full border transition ${scroll ? "border-blue-300 text-blue-200 hover:bg-blue-800/30" : "border-blue-600 text-blue-600 hover:bg-blue-50"}`}
               >
                 Masuk
               </Link>
               <Link
                 to="/register"
-                className="px-5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-full hover:shadow-md transition"
+                className={`px-5 py-1.5 rounded-full transition ${scroll ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white hover:shadow-md" : "bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:shadow-md"}`}
               >
                 Daftar
               </Link>
@@ -226,25 +219,17 @@ export default function LandingPage() {
       </nav>
 
       {/* === HERO === */}
-      <section
-        ref={berandaRef}
-        className="relative bg-white pt-28 md:pt-32 pb-16 md:pb-24"
-      >
+      <section ref={berandaRef} className="relative pt-28 md:pt-32 pb-16 md:pb-24 bg-[#0d1224] text-white">
         <div className="max-w-7xl mx-auto px-6 md:px-12 grid md:grid-cols-2 gap-10 items-center">
           {/* Text Left */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            className="space-y-6 text-center md:text-left"
-          >
-            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-              {hero.title || "Ruang Kreatif & Kolaborasi untuk Profesional Digital"}
+          <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }} className="space-y-6 text-center md:text-left">
+            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
+              {hero.title || ""}
             </h1>
 
-            <p className="text-gray-600 text-lg md:text-xl leading-relaxed max-w-2xl">
+            <p className="text-gray-300 text-lg md:text-xl leading-relaxed max-w-2xl">
               {hero.subtitle ||
-                "Voxpro Hub menyediakan studio, ruang meeting, dan fasilitas event yang dirancang untuk mendukung produktivitas, kreativitas, dan pertumbuhan komunitas startup di Makassar."}
+                "."}
             </p>
 
             {/* CTA Buttons */}
@@ -255,61 +240,40 @@ export default function LandingPage() {
                   className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-semibold shadow-lg hover:scale-[1.01] transition transform duration-200"
                 >
                   {hero.button_text}
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </Link>
               )}
-              <button
-                onClick={() => scrollToSection(fasilitasRef)}
-                className="px-6 py-3 border border-blue-200 text-blue-600 rounded-2xl font-semibold hover:bg-blue-50 transition"
-              >
+              <button onClick={() => scrollToSection(fasilitasRef)} className="px-6 py-3 border border-blue-400 text-blue-200 rounded-2xl font-semibold hover:bg-blue-800/30 transition">
                 Lihat Fasilitas
               </button>
             </div>
 
             {/* small trust badges */}
             <div className="flex items-center justify-center md:justify-start gap-6 mt-6">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 shadow-sm">★</span>
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-700 text-white shadow-sm">★</span>
                 <div>
-                  <div className="text-sm font-semibold text-gray-900">Trusted</div>
-                  <div className="text-xs">oleh komunitas kreatif Makassar</div>
+                  <div className="text-sm font-semibold text-white">Dipercaya</div>
+                  <div className="text-xs text-gray-300">oleh komunitas kreatif Makassar</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-cyan-50 text-cyan-600 shadow-sm">⚡</span>
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-cyan-700 text-white shadow-sm">⚡</span>
                 <div>
-                  <div className="text-sm font-semibold text-gray-900">Fast Setup</div>
-                  <div className="text-xs">infrastruktur ready-to-use</div>
+                  <div className="text-sm font-semibold text-white">Siap Pakai</div>
+                  <div className="text-xs text-gray-300">ruangan lengkap & modern</div>
                 </div>
               </div>
             </div>
           </motion.div>
 
           {/* Image Right */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            className="relative flex justify-center"
-          >
+          <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }} className="relative flex justify-center">
             <div className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src={image13}
-                alt="Team"
-                className="w-full h-full object-cover"
-                style={{ minHeight: 380 }}
-              />
-              {/* subtle overlay card bottom-left */}
-              <div className="absolute bottom-6 left-6 bg-white/80 backdrop-blur-md rounded-2xl px-4 py-3 shadow-sm border border-white/60">
-              </div>
+              <img src={image13} alt="Team" className="w-full h-full object-cover" style={{ minHeight: 380 }} />
             </div>
           </motion.div>
         </div>
@@ -317,12 +281,7 @@ export default function LandingPage() {
 
       {/* === VISI SECTION === */}
       <section className="bg-white py-16 md:py-20 px-6 md:px-16 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-3xl mx-auto mb-10"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-3xl mx-auto mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
             {visi?.title || "Visi & Misi"}
           </h2>
@@ -336,21 +295,17 @@ export default function LandingPage() {
         {/* Features Grid */}
         <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-6 max-w-6xl mx-auto">
           {[
-            { icon: "🔒", title: "Secure Platform", desc: "Keamanan privat untuk semua booking." },
-            { icon: "⚡", title: "Fast Performance", desc: "Infrastruktur siap pakai, minim setup." },
-            { icon: "🔗", title: "Easy Integration", desc: "Integrasi cepat dengan tool tim Anda." },
-            { icon: "⚙️", title: "Customizable", desc: "Ruang & paket bisa disesuaikan." },
+            { icon: "🏢", title: "Ruang Kerja Modern", desc: "Tempat nyaman & representatif di pusat Kota Makassar." },
+            { icon: "🎙️", title: "Studio Podcast Profesional", desc: "Dilengkapi alat rekaman dan teknisi onsite siap bantu." },
+            { icon: "💼", title: "Meeting Room Fleksibel", desc: "Cocok untuk meeting, kelas privat, atau pelatihan kecil." },
+            { icon: "☕", title: "Kedai Mantao di Lantai 1", desc: "Nikmati kopi & suasana santai untuk mendukung produktivitas." },
           ].map((item, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.12 }}
-              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition transform hover:-translate-y-1"
-            >
-              <div className="text-3xl mb-4 text-blue-600">{item.icon}</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-gray-600 text-sm">{item.desc}</p>
+            <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.12 }} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition transform hover:-translate-y-1 flex flex-col items-center text-center">
+              <div className="text-4xl mb-3 text-blue-600">{item.icon}</div>
+              <div className="flex flex-wrap justify-center gap-x-2 text-gray-700 text-sm leading-snug max-w-[220px]">
+                <span className="font-semibold text-gray-900">{item.title}</span>
+                <span>{item.desc}</span>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -360,66 +315,91 @@ export default function LandingPage() {
       <section ref={fasilitasRef} className="bg-white py-16 md:py-24 px-6 md:px-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
-            {fasilitas.title || "Fasilitas Kami"}
+            {fasilitas.title || "Fasilitas Kami"} {/* Dinamis dari API */}
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto">
-            {fasilitas.subtitle ||
-              "Pilih ruang yang sesuai: studio untuk produksi, ruang meeting untuk diskusi, atau private room untuk fokus."}
+            {fasilitas.subtitle || "Pilih ruang sesuai kebutuhanmu — dari studio profesional, ruang meeting, hingga ruang privat."} {/* Dinamis dari API */}
           </p>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap justify-center gap-3 mb-10">
-          {["All", "Workspace", "Meeting Room", "Event Space", "Facilities"].map(
-            (cat, i) => (
-              <button
-                key={i}
-                className={`px-4 py-2 text-sm font-semibold rounded-full border ${
-                  i === 0
-                    ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white border-transparent shadow-md"
-                    : "text-gray-700 border-gray-200 hover:bg-gray-50"
-                } transition`}
-              >
-                {cat}
-              </button>
-            )
-          )}
-        </div>
-
-        {/* Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {fasilitasData.map((item, index) => (
+          {(fasilitas.items || [
+            {
+              img: fasilitas1,
+              title: "Podcast Room",
+              desc: "Cocok untuk podcast, video, atau live streaming profesional kapasitas 2-3 orang.",
+              priceOld: "Rp350.000",
+              priceNew: "Rp250.000",
+              badge: "Penawaran Spesial",
+              valid: "Berlaku hingga 31 Des 2025",
+              btn: "Reservasi Sekarang",
+            },
+            {
+              img: fasilitas2,
+              title: "Meeting Room",
+              desc: "Ideal untuk meeting skala kecil dengan fasilitas lengkap kapasitas 6-10 orang.",
+              priceOld: "Rp300.000",
+              priceNew: "Rp220.000",
+              badge: "Nilai Terbaik",
+              valid: "Bisa dipesan kapan saja",
+              btn: "Pesan Hari Ini",
+            },
+            {
+              img: fasilitas3,
+              title: "Small Room",
+              desc: "Nyaman untuk rapat privat atau kerja mandiri kapasitas 2-3 orang.",
+              priceOld: "Rp200.000",
+              priceNew: "Rp150.000",
+              badge: "Promo Awal",
+              valid: "Pesan lebih awal & hemat",
+              btn: "Booking Awal",
+            },
+          ]).map((item, i) => (
             <motion.div
-              key={index}
+              key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.08 }}
-              className="group bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-md hover:shadow-xl transition-all"
             >
+              {/* Gambar + Badge */}
               <div className="relative">
-                <LazyImage
-                  src={item.img}
-                  alt={item.title}
-                  className="w-full h-[220px] object-cover"
-                />
-                <div className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-cyan-400 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                  FACILITY
-                </div>
+                <img src={item.img} alt={item.title} className="w-full h-[220px] object-cover" />
+                {item.badge && (
+                  <div className="absolute top-4 right-4 bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                    {item.badge}
+                  </div>
+                )}
               </div>
 
-              <div className="p-6 text-left">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
+              {/* Isi Card */}
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
                 <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.desc}</p>
 
-                <div className="flex justify-between items-center text-sm text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <span>🏷️</span>
-                    <span>Available</span>
+                {/* Harga */}
+                {item.priceOld && item.priceNew && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="line-through text-gray-400 text-sm">{item.priceOld}</span>
+                    <span className="text-lg font-bold text-green-700">{item.priceNew}</span>
+                    <span className="text-sm text-gray-500">/ sesi</span>
                   </div>
-                  <Link
-                    to="/detail-layanan"
-                    className="text-blue-600 font-semibold hover:underline"
-                  >
+                )}
+
+                {/* Validitas */}
+                {item.valid && <div className="flex items-center text-xs text-gray-500 mb-4">📅 {item.valid}</div>}
+
+                {/* Tombol */}
+                <Link
+                  to="/booking"
+                  className="w-full px-4 py-2 text-sm rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:scale-[1.01] transition-transform duration-200 mb-3 inline-block text-center"
+                >
+                  {item.btn}
+                </Link>
+
+                {/* View details */}
+                <div className="text-right">
+                  <Link to="/detail-layanan" className="text-blue-600 text-sm font-semibold hover:underline">
                     View Details →
                   </Link>
                 </div>
@@ -428,20 +408,67 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-      
-      
-      {/* === LOKASI === */}
+
+      {/* === REVIEW & RATING === */}
       <section
-        ref={lokasiRef}
-        className="relative bg-white py-16 md:py-20 px-6 md:px-20"
+        ref={reviewsRef}
+        className="bg-white py-20 px-6 md:px-16 scroll-mt-24" // ← tambahkan scroll-mt agar tidak ketutup navbar
       >
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
+            Apa Kata Mereka
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto">
+            Testimoni nyata dari pelanggan yang telah menggunakan fasilitas kami di Voxpro Hub Makassar.
+          </p>
+          <div className="mx-auto mt-4 w-24 h-1 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"></div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto pr-2">
+          {reviews.map((review, i) => (
+            <motion.div
+              key={review.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.15, duration: 0.6 }}
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all"
+            >
+              <div className="flex items-center mb-4">
+                {[...Array(5)].map((_, j) => (
+                  <FaStar
+                    key={j}
+                    className={`w-5 h-5 ${j < review.rating ? "text-yellow-400" : "text-gray-300"
+                      }`}
+                  />
+                ))}
+              </div>
+
+              <p className="text-gray-700 italic mb-6 leading-relaxed">
+                “{review.comment}”
+              </p>
+
+              <div className="flex items-center gap-4 mt-auto">
+                <img
+                  src={review.img}
+                  alt={review.name}
+                  className="w-12 h-12 rounded-full object-cover border border-gray-200 shadow-sm"
+                />
+                <div>
+                  <h4 className="font-semibold text-gray-900">{review.name}</h4>
+                  <p className="text-sm text-gray-500">{review.role}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+
+
+      {/* === LOKASI === */}
+      <section ref={lokasiRef} className="relative bg-white py-16 md:py-20 px-6 md:px-20">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="w-full h-[380px] rounded-3xl overflow-hidden shadow-xl border border-gray-100"
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="w-full h-[380px] rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <iframe
               title="Lokasi Voxpro Hub"
               src="https://www.google.com/maps?q=Kedai%20Mantao%20Makassar&output=embed"
@@ -454,28 +481,15 @@ export default function LandingPage() {
             ></iframe>
           </motion.div>
 
-          <motion.div
-            initial={{ x: 40, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-6 text-center md:text-left"
-          >
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-              {lokasi?.title || "Lokasi Kami"}
-            </h2>
+          <motion.div initial={{ x: 40, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }} className="space-y-6 text-center md:text-left">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">{lokasi?.title || "Lokasi Kami"}</h2>
 
             <p className="text-gray-600 text-lg leading-relaxed">
-              {lokasi?.subtitle ||
-                "Temukan kami di pusat kota Makassar — mudah diakses dan dekat dengan berbagai fasilitas publik."}
+              {lokasi?.subtitle || "Temukan kami di pusat kota Makassar — mudah diakses dan dekat dengan berbagai fasilitas publik."}
             </p>
 
             {lokasi?.button_link && (
-              <a
-                href={lokasi.button_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium shadow-md hover:scale-[1.01] transition-transform duration-200"
-              >
+              <a href={lokasi.button_link} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium shadow-md hover:scale-[1.01] transition-transform duration-200">
                 Buka di Google Maps →
               </a>
             )}
@@ -484,86 +498,46 @@ export default function LandingPage() {
       </section>
 
       {/* === KONTAK === */}
-      <section
-        ref={kontakRef}
-        className="relative bg-white text-gray-800 py-16 md:py-20 px-6 md:px-20"
-      >
+      <section ref={kontakRef} className="relative bg-white text-gray-800 py-16 md:py-20 px-6 md:px-20">
         <div className="relative z-10 max-w-6xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
-              {kontak.title || "Kontak Kami"}
-            </h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">
-              {kontak.subtitle || "Butuh bantuan? Hubungi kami via email atau WhatsApp."}
-            </p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">{kontak.title || "Kontak Kami"}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">{kontak.subtitle || "Butuh bantuan? Hubungi kami via email atau WhatsApp."}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 items-start">
             {/* Info Kontak */}
-            <motion.div
-              initial={{ x: -30, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-6 bg-white rounded-2xl p-6 shadow-md border border-gray-100"
-            >
-              <h3 className="text-2xl font-semibold text-gray-800">Let's Connect</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Kami siap membantu menjawab pertanyaan Anda dan memberikan informasi yang Anda butuhkan.
-              </p>
+            <motion.div initial={{ x: -30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }} className="space-y-6 bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+              <h3 className="text-2xl font-semibold text-gray-800">Mari Terhubung</h3>
+              <p className="text-gray-600 leading-relaxed">Kami siap membantu menjawab pertanyaan Anda dan memberikan informasi yang Anda butuhkan.</p>
 
               <div className="space-y-4 text-gray-700">
                 <div className="flex items-center gap-3">
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/561/561127.png"
-                    alt="Email"
-                    className="w-5 h-5 opacity-80"
-                  />
+                  <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="Email" className="w-5 h-5 opacity-80" />
                   <span>{kontak.email || "contact@example.com"}</span>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/159/159832.png"
-                    alt="Phone"
-                    className="w-5 h-5 opacity-80"
-                  />
+                  <img src="https://cdn-icons-png.flaticon.com/512/159/159832.png" alt="Phone" className="w-5 h-5 opacity-80" />
                   <span>{kontak.phone || "+62 852-4200-8058"}</span>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/684/684908.png"
-                    alt="Location"
-                    className="w-5 h-5 opacity-80"
-                  />
+                  <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Location" className="w-5 h-5 opacity-80" />
                   <span>{kontak.address || "Kedai Mantao Lt.2, Jl. Toddopuli Raya"}</span>
                 </div>
               </div>
 
               {kontak.button_text && (
-                <a
-                  href={kontak.button_link || "https://wa.me/6285242008058"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium px-4 py-2 rounded-full shadow-md hover:scale-[1.01] transition-transform duration-200"
-                >
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/733/733585.png"
-                    alt="WA"
-                    className="w-4 h-4"
-                  />
+                <a href={kontak.button_link || `https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium px-4 py-2 rounded-full shadow-md hover:scale-[1.01] transition-transform duration-200">
+                  <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WA" className="w-4 h-4" />
                   {kontak.button_text}
                 </a>
               )}
             </motion.div>
 
             {/* Form Kontak */}
-            <motion.div
-              initial={{ x: 30, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="bg-white rounded-2xl p-6 shadow-md border border-gray-100"
-            >
+            <motion.div initial={{ x: 30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
               <form
                 className="space-y-4"
                 onSubmit={(e) => {
@@ -575,7 +549,7 @@ export default function LandingPage() {
                   const message = e.target.message.value;
 
                   // === Format pesan ke WhatsApp ===
-                  const whatsappNumber = "6285242008058"; // ubah ke nomor tujuan (tanpa +)
+                  const whatsappNumber = WHATSAPP_NUMBER; // ubah ke nomor tujuan (tanpa +)
                   const text = `*Pesan Baru dari Website Voxpro Hub*\n\n👤 *Nama:* ${fullName}\n📧 *Email:* ${email}\n📝 *Subjek:* ${subject}\n💬 *Pesan:* ${message}`;
                   const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
 
@@ -583,40 +557,13 @@ export default function LandingPage() {
                 }}
               >
                 <div className="grid md:grid-cols-2 gap-3">
-                  <input
-                    name="fullName"
-                    type="text"
-                    placeholder="Full Name"
-                    required
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none"
-                  />
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="Email Address"
-                    required
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none"
-                  />
+                  <input name="fullName" type="text" placeholder="Nama Lengkap" required className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none" />
+                  <input name="email" type="email" placeholder="Alamat Email" required className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none" />
                 </div>
-                <input
-                  name="subject"
-                  type="text"
-                  placeholder="Subject"
-                  required
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none"
-                />
-                <textarea
-                  name="message"
-                  rows="5"
-                  placeholder="Message"
-                  required
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none resize-none"
-                ></textarea>
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium px-4 py-2 rounded-full shadow-md hover:scale-[1.01] transition-transform duration-200"
-                >
-                  Send Message →
+                <input name="subject" type="text" placeholder="Topik" required className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none" />
+                <textarea name="message" rows="5" placeholder="Pesan" required className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-200 outline-none resize-none"></textarea>
+                <button type="submit" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium px-4 py-2 rounded-full shadow-md hover:scale-[1.01] transition-transform duration-200">
+                  Kirim Pesan Anda →
                 </button>
               </form>
             </motion.div>
@@ -624,7 +571,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* === FOOTER BARU === */}
+      {/* === FOOTER === */}
       <footer className="bg-[#0d1224] text-gray-300 pt-12 pb-8 px-6 md:px-20 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500"></div>
 
@@ -654,6 +601,7 @@ export default function LandingPage() {
             <ul className="space-y-2 text-sm">
               <li><button onClick={() => scrollToSection(berandaRef)} className="hover:text-blue-400 transition">Beranda</button></li>
               <li><button onClick={() => scrollToSection(fasilitasRef)} className="hover:text-blue-400 transition">Fasilitas</button></li>
+              <li><button onClick={() => scrollToSection(reviewsRef)} className="hover:text-blue-400 transition">Review</button></li>
               <li><button onClick={() => scrollToSection(lokasiRef)} className="hover:text-blue-400 transition">Lokasi</button></li>
               <li><button onClick={() => scrollToSection(kontakRef)} className="hover:text-blue-400 transition">Kontak</button></li>
             </ul>
@@ -675,22 +623,12 @@ export default function LandingPage() {
             <h3 className="text-white font-semibold mb-4 uppercase tracking-wider text-sm">Connect</h3>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="https://instagram.com/voxprohub"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-blue-400 transition"
-                >
+                <a href="https://instagram.com/voxprohub" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-400 transition">
                   <FaInstagram /> Instagram
                 </a>
               </li>
               <li>
-                <a
-                  href="https://www.facebook.com/voxprohub"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-blue-400 transition"
-                >
+                <a href="https://www.facebook.com/voxprohub" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-400 transition">
                   <FaFacebookF /> Facebook
                 </a>
               </li>
@@ -700,9 +638,7 @@ export default function LandingPage() {
 
         {/* Divider */}
         <div className="mt-10 border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
-          <p>
-            © {new Date().getFullYear()} <span className="text-white font-semibold">Voxpro Hub</span> — Crafted with voxprohub Makassar
-          </p>
+          <p>© {new Date().getFullYear()} <span className="text-white font-semibold">Voxpro Hub</span> — Crafted with voxprohub Makassar</p>
         </div>
 
         {/* Back to Top */}
@@ -716,6 +652,42 @@ export default function LandingPage() {
           </button>
         )}
       </footer>
+
+      {/* =========================
+          Floating WhatsApp Button
+          ========================= */}
+      <div
+        aria-hidden={false}
+        className="fixed z-50 bottom-6 right-20 md:right-24 flex items-center gap-3"
+      >
+        {/* Small circular icon for mobile (only shows on small screens) */}
+        <a
+          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_TEXT)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat via WhatsApp"
+          className="md:hidden inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-lg hover:scale-105 transition-transform"
+        >
+          <FaWhatsapp className="w-6 h-6" />
+        </a>
+
+        {/* Full bubble with text for md+ screens */}
+        <a
+          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_TEXT)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Hubungi Kami - Chat WhatsApp"
+          className="hidden md:flex items-center gap-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 shadow-xl hover:scale-[1.02] transition-transform"
+        >
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10">
+            <FaWhatsapp className="w-5 h-5" />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-semibold leading-none">Hubungi Kami Disini</div>
+            <div className="text-xs opacity-90">Chat WhatsApp</div>
+          </div>
+        </a>
+      </div>
     </div>
   );
 }
